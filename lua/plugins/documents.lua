@@ -8,10 +8,12 @@ return {
     ft = "tex",
     lazy = true,
     config = function()
-      -- Set Zathura as the PDF viewer
-      vim.g.vimtex_view_method = "general"
-      vim.g.vimtex_view_general_viewer = "zathura"
-      vim.g.vimtex_view_general_options = "--synctex-forward @line:@col:@file build/@pdf"
+      -- Skim as the PDF viewer: vimtex drives forward search via Skim's bundled
+      -- `displayline`. Inverse search (Cmd-Shift-click in Skim) is configured on
+      -- the Skim side (Settings > Sync: Custom, nvim --headless -c "VimtexInverseSearch ...").
+      vim.g.vimtex_view_method = "skim"
+      vim.g.vimtex_view_skim_sync = 1
+      vim.g.vimtex_view_skim_activate = 1
 
       -- Disable concealment for better readability
       vim.g.vimtex_syntax_conceal_disable = 1

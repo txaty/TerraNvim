@@ -76,12 +76,30 @@ return {
     },
   },
   {
-    "sindrets/diffview.nvim",
-    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
+    -- Maintained fork of sindrets/diffview.nvim (unmaintained since 2024).
+    -- Same `diffview` module and :Diffview* commands.
+    "dlyongemallo/diffview-plus.nvim",
+    version = "*",
+    cmd = {
+      "DiffviewOpen",
+      "DiffviewClose",
+      "DiffviewToggleFiles",
+      "DiffviewFocusFiles",
+      "DiffviewFileHistory",
+      "DiffviewRefresh",
+    },
     opts = {
       enhanced_diff_hl = true,
+      -- Sessions are restored at VimEnter, before this cmd-lazy plugin loads,
+      -- so its SessionLoadPost replay never runs; don't write the
+      -- <session>.diffview.json sidecars nobody reads.
+      restore_session = false,
       view = {
         default = { layout = "diff2_horizontal" },
+        -- 3-way merge view used during merges/rebases with conflicts
+        -- (replaces git-conflict.nvim): [x ]x jump, <leader>co/ct/cb/ca pick
+        -- ours/theirs/base/all, dx deletes the conflict region.
+        merge_tool = { layout = "diff3_mixed", disable_diagnostics = true },
       },
       file_panel = {
         listing_style = "list",
@@ -101,17 +119,37 @@ return {
       { "<leader>gvs", "<cmd>DiffviewOpen --staged<cr>", desc = "Diffview: staged changes" },
       { "<leader>gvh", "<cmd>DiffviewFileHistory<cr>", desc = "Diffview: repo history" },
       { "<leader>gvb", "<cmd>DiffviewOpen HEAD~1<cr>", desc = "Diffview: compare prev commit" },
+      { "<leader>gvm", "<cmd>DiffviewOpen<cr>", desc = "Diffview: resolve merge conflicts" },
     },
   },
 
-  -- Inline merge conflict resolution: ours/theirs/both chooser
+  -- lazygit in a float (replaces lazygit.nvim); `configure` makes lazygit use
+  -- the current colorscheme and open files in this Neovim.
   {
-    "akinsho/git-conflict.nvim",
-    version = "*",
-    event = "BufReadPost",
-    opts = {
-      default_mappings = true, -- co (ours), ct (theirs), cb (both), c0 (none), ]x/[x (navigate)
-      disable_diagnostics = true,
+    "folke/snacks.nvim",
+    opts = { lazygit = { configure = true } },
+    keys = {
+      {
+        "<leader>gg",
+        function()
+          Snacks.lazygit()
+        end,
+        desc = "Git: lazygit",
+      },
+      {
+        "<leader>gl",
+        function()
+          Snacks.lazygit.log_file()
+        end,
+        desc = "Git: lazygit file log",
+      },
+      {
+        "<leader>gL",
+        function()
+          Snacks.lazygit.log()
+        end,
+        desc = "Git: lazygit log",
+      },
     },
   },
 }

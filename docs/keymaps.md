@@ -113,6 +113,7 @@ Always available:
 | `<leader>Ls` | Status of every pack |
 | `<leader>Li` | Install missing tools and parsers of enabled packs |
 | `<leader>Lh` | `:checkhealth core.lang` |
+| `<leader>Lt` | Trust this project (`:TrustProject`): allow tools that run project code |
 
 Pack keymaps (buffer-local):
 

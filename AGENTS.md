@@ -85,6 +85,12 @@ gets; `scripts/smoke.lua` shows how to emulate it.
 - Write files only under `stdpath("data"|"state"|"cache")`, through
   `core.persist` (refuses symlinks). Delete only with
   `safe_delete()` in `core/cleanup.lua`.
+- Opening a file in an untrusted project must not run project code. Pin a
+  Mason/PATH `cmd` for servers whose nvim-lspconfig default prefers
+  `node_modules/.bin` (the smoke test asserts table `cmd`s). Gate tools whose
+  project config is code on `core.trust`: `trust = true` on a server,
+  `trust.allows()` in linter conditions, `trust.formatter_condition()` /
+  `trust.node_bin()` for conform.
 - Keep `modeline=false`, `modelines=0`, `exrc=false`, `secure=true`, and the
   pinned `'shell'`.
 - Every plugin is pinned in lazy-lock.json; `checker` stays disabled. After

@@ -85,6 +85,7 @@ return {
       mason = "zls",                   -- required: Mason package, or false for system servers
       -- enabled = function(o) ... end, -- variant/platform switch
       -- managed_by = "plugin",         -- configured by a plugin, never enabled here
+      -- trust = true,                  -- loads project code: only in trusted projects
       settings = { zls = { enable_inlay_hints = true } }, -- vim.lsp.Config fields
     },
   },
@@ -113,7 +114,10 @@ Rules the validator enforces (`make test`, `:checkhealth core.lang`):
 - `name`, if set, equals the file name; `title`, `description` and `filetypes`
   are required.
 - Each filetype, server and plugin has exactly one owning pack.
-- Every server sets `mason` explicitly (`false` for system-provided servers).
+- Every server sets `mason` explicitly (`false` for system-provided servers),
+  and Mason-backed servers resolve to a fixed `cmd` table. nvim-lspconfig's
+  function `cmd`s prefer the project's `node_modules/.bin`; pin `cmd` in the
+  pack.
 - Keys have a `desc` (or are a `group`).
 - `plugins` never lists a shared plugin (lspconfig, conform, nvim-lint,
   nvim-dap, neotest, treesitter, which-key, snacks, mason, blink, plenary,
@@ -122,6 +126,17 @@ Rules the validator enforces (`make test`, `:checkhealth core.lang`):
   `plugins` too, so they get the same `cond`.
 - Mason package and parser names exist; formatters and linters are known to
   conform / nvim-lint.
+
+## Project trust
+
+Packs must not run project code in untrusted projects (see README, "Security
+model"):
+- Mark servers that load project code with `trust = true`.
+- In linter conditions, call `require("core.trust").allows(name, ctx.buf)`.
+- For conform, use `trust.formatter_condition(name)` and
+  `trust.node_bin(bin)` (project-local binaries only when trusted).
+
+`:TrustProject` / `<leader>Lt` trusts the current project.
 
 ## Adding a language
 

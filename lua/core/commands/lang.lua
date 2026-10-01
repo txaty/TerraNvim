@@ -90,6 +90,14 @@ function M.register()
     require("core.ui.lang_panel").open()
   end, { desc = "Open the language pack panel" })
 
+  vim.api.nvim_create_user_command("TrustProject", function(o)
+    require("core.trust").trust(o.args ~= "" and o.args or nil)
+  end, {
+    nargs = "?",
+    complete = "dir",
+    desc = "Trust a project (default: current buffer's) so tools that run project code may run",
+  })
+
   vim.api.nvim_create_user_command("LangInfo", function()
     vim.cmd.checkhealth "core.lang"
   end, { desc = "Language pack health (servers, tools, parsers)" })

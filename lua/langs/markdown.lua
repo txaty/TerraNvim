@@ -43,9 +43,24 @@ return {
   formatters_by_ft = function(o)
     return o.format and { markdown = { "prettierd", "prettier", stop_after_first = true } } or {}
   end,
+  formatters = function()
+    local trust = require "core.trust"
+    return {
+      prettier = { command = trust.node_bin "prettier", condition = trust.formatter_condition "prettier" },
+      prettierd = { condition = trust.formatter_condition "prettier" },
+    }
+  end,
   linters_by_ft = function(o)
     return o.lint and { markdown = { "markdownlint-cli2" } } or {}
   end,
+  linters = {
+    -- markdownlint-cli2 configs can be JavaScript (.markdownlint-cli2.cjs).
+    ["markdownlint-cli2"] = {
+      condition = function(ctx)
+        return require("core.trust").allows("markdownlint-cli2", ctx.buf)
+      end,
+    },
+  },
   plugins = {
     {
       "MeanderingProgrammer/render-markdown.nvim",

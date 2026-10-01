@@ -8,10 +8,13 @@ return {
   servers = {
     yamlls = {
       mason = "yaml-language-server",
+      -- Pinned (see json.lua): never the project's node_modules/.bin copy.
+      cmd = { "yaml-language-server", "--stdio" },
       settings = {
         yaml = {
-          -- yamlls' own SchemaStore download is replaced by SchemaStore.nvim's
-          -- bundled catalogue (no network request, same schemas).
+          -- yamlls' own SchemaStore catalogue download is replaced by
+          -- SchemaStore.nvim's bundled list (individual schemas are still
+          -- fetched by yamlls when a matching file is opened).
           schemaStore = { enable = false, url = "" },
           keyOrdering = false,
           validate = true,

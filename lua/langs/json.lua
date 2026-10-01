@@ -8,6 +8,9 @@ return {
   servers = {
     jsonls = {
       mason = "json-lsp",
+      -- Pinned: nvim-lspconfig's default prefers <root>/node_modules/.bin, which
+      -- would run a binary shipped by whatever repository is open.
+      cmd = { "vscode-json-language-server", "--stdio" },
       settings = { json = { validate = { enable = true } } },
       before_init = function(_, config)
         config.settings.json.schemas = require("schemastore").json.schemas()

@@ -21,10 +21,12 @@ return {
   formatters_by_ft = { lua = { "stylua" } },
   linters_by_ft = { lua = { "luacheck" } },
   linters = {
-    -- luacheck without a project config reports every global as undefined.
+    -- luacheck without a project config reports every global as undefined,
+    -- and .luacheckrc is Lua that luacheck executes: trusted projects only.
     luacheck = {
       condition = function(ctx)
         return vim.fs.root(ctx.dirname, { ".luacheckrc" }) ~= nil
+          and require("core.trust").allows("luacheck (.luacheckrc)", ctx.buf)
       end,
     },
   },

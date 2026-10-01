@@ -177,15 +177,43 @@ Mounting with sshfs also works.
 
 ## Security model
 
-- No modelines, no `.nvim.lua`/`.exrc` execution (`exrc=false`, `secure`).
-- `'shell'` is pinned to `/bin/sh` for `:!` and plugins; interactive
+Opening a file in a repository you just cloned should not run code that the
+repository ships. TerraNvim treats every project as **untrusted** until you
+run `:TrustProject` (`<leader>Lt`), using Neovim's own trust database
+(`:trust`).
+
+In untrusted projects:
+- Language servers, formatters and linters come from Mason or your `PATH`,
+  never from the project's `node_modules/.bin`.
+- Tools whose project configuration is code don't run:
+  - luacheck (`.luacheckrc` is Lua);
+  - prettier (JS configs and plugins);
+  - the eslint and tailwindcss servers (they load project JS);
+  - markdownlint-cli2 (`.cjs` configs);
+  - solhint (plugins);
+  - the workspace TypeScript SDK.
+
+  A notice names what was skipped. LSP formatting is used instead where it
+  exists.
+- Toolchains that build the project are not gated: rust-analyzer runs build
+  scripts and proc macros, SwiftPM evaluates `Package.swift`, and go may
+  fetch toolchains. Enabling those language packs means accepting that, as in
+  any editor.
+
+Hardened defaults:
+- No modelines and no `.nvim.lua`/`.exrc` execution (`exrc=false`, `secure`).
+- `'shell'` is pinned to `/bin/sh` for `:!` and plugins. Interactive
   terminals use your `$SHELL` only after validating it.
 - Plugins are pinned in `lazy-lock.json` and never auto-update
   (`checker.enabled = false`).
-- Network access happens only on: the first start (missing plugins); first use
-  of an enabled language (missing Mason tools/parsers; `install.auto = false`
-  turns this off); `:Lazy`/`:Mason`/`:LangInstall`; and AI plugins once you
-  enable them.
+- Network access:
+  - on the first start (missing plugins);
+  - on first use of an enabled language: missing Mason tools and parsers
+    (`install.auto = false` turns this off), plus whatever those tools fetch
+    themselves (e.g. yamlls downloading a JSON schema for the file you
+    opened);
+  - when you run `:Lazy`, `:Mason` or `:LangInstall`;
+  - from AI plugins, once you enable them.
 - Persisted state is written only under `stdpath("data"|"state"|"cache")`,
   never through symlinks.
 - External openers (`<leader>mo`, `<leader>io`) ask before launching.

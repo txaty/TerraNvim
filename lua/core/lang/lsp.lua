@@ -112,6 +112,17 @@ function M.configure(list)
   for name, entry in pairs(lang.collect.servers(list)) do
     if entry.spec.managed_by then
       status[name] = "managed"
+    elseif #vim.api.nvim_get_runtime_file("lsp/" .. name .. ".lua", false) == 0 and not entry.spec.cmd then
+      -- Unknown config name (typo, or not in nvim-lspconfig) and no cmd of
+      -- our own: vim.lsp.config() would accept it and the server would just
+      -- never start. Report it instead.
+      status[name] = "missing"
+      vim.schedule(function()
+        vim.notify(
+          ("Language pack %s: no LSP config named %s (not in nvim-lspconfig, no cmd)"):format(entry.pack, name),
+          vim.log.levels.WARN
+        )
+      end)
     else
       vim.lsp.config(name, to_config(name, entry.spec))
       if not auto_start then

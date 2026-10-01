@@ -1,5 +1,9 @@
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
+  if vim.g.nvim_smoke then
+    vim.api.nvim_echo({ { "lazy.nvim is not installed; run `make deps` first", "ErrorMsg" } }, true, {})
+    return
+  end
   local out = vim.fn.system {
     "git",
     "clone",

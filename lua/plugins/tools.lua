@@ -58,8 +58,9 @@ return {
           lint.try()
         end,
       })
-      -- The event that lazy-loaded the plugin is consumed before config runs.
-      lint.try()
+      -- The event that lazy-loaded the plugin is consumed before config runs,
+      -- and runs before filetype detection: lint the buffer on the next tick.
+      vim.schedule(lint.try)
     end,
   },
 }

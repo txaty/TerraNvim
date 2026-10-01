@@ -16,7 +16,9 @@ set -u
 
 repo=$(cd "$(dirname "$0")/.." && pwd)
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/nvim-smoke.XXXXXX")
-trap 'rm -rf "$tmp"' EXIT INT TERM
+trap 'rm -rf "$tmp"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 mkdir -p "$tmp/config" "$tmp/state"
 ln -s "$repo" "$tmp/config/nvim"
 

@@ -41,6 +41,7 @@ return {
         { "<leader>i", group = "Image", icon = "󰋩" },
         { "<leader>l", group = "LSP", icon = "󰒋" },
         { "<leader>L", group = "Language", icon = "󰗊" },
+        { "<leader>lp", group = "LSP Peek", icon = "󰈈" },
         { "<leader>lw", group = "LSP Workspace", icon = "󰉖" },
         { "<leader>m", group = "Markdown", icon = "󰍔" },
         { "<leader>n", group = "Notify", icon = "󰂞" },

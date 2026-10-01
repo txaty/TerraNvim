@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(stylua:*)",
+      "Bash(luacheck:*)",
+      "Bash(scripts/smoke.sh:*)",
+      "Bash(scripts/startup.sh:*)",
+      "Bash(nvim --headless:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stylua.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-A general-purpose Neovim 0.12 distribution (lazy.nvim, snacks.nvim,
+TerraNvim: a general-purpose Neovim 0.12 distribution (lazy.nvim, snacks.nvim,
 `vim.lsp.config`). Optimised for startup time (about 25 ms headless) and for
 adding languages without touching shared code. User docs: README.md,
 docs/languages.md, docs/keymaps.md.

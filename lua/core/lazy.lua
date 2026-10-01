@@ -18,15 +18,11 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- lazy.nvim's `import` is not recursive: it picks up lua/plugins/*.lua and
+-- lua/plugins/*/init.lua only. Language-pack plugins come in through
+-- lua/plugins/langs.lua.
 local spec = {
   { import = "plugins" },
-  -- lazy.nvim's `import` is NOT recursive: it picks up `lua/plugins/*.lua` and
-  -- `lua/plugins/*/init.lua` only. Without this second entry the whole
-  -- `lua/plugins/languages/` tree (rustaceanvim, venv-selector, flutter-tools,
-  -- nvim-ts-autotag, and every mason/treesitter/conform/lspconfig extension)
-  -- is silently dropped — no error, just no language tooling. Any new
-  -- subdirectory under lua/plugins/ needs its own import entry here.
-  { import = "plugins.languages" },
 }
 
 -- Personal plugin specs (gitignored). Only imported when the directory has a

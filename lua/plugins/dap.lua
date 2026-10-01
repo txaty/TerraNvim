@@ -133,43 +133,16 @@ return {
         dapui.close()
       end
 
-      -- Defer language-specific DAP configs loading (only load when needed)
-      -- Respects lang_toggle: disabled languages skip their DAP config
-      --
-      -- Modules live in lua/dap_configs/, not lua/dap/. The latter shares a
-      -- require namespace with nvim-dap's own lua/dap/ tree, so both
-      -- directories fed the same `dap.*` module path and resolution depended on
-      -- runtimepath order — fine only for as long as no filename collided.
-      --
-      -- NOTE: This FileType autocmd fires once=true. For buffers opened before this
-      -- plugin loads (e.g., session-restored buffers), lifecycle/init.lua's
-      -- retrigger_buffer_events() emits synthetic FileType events to ensure DAP
-      -- configs are loaded. Without that retrigger, DAP configs would never load
-      -- for pre-existing buffers.
-      vim.api.nvim_create_autocmd("FileType", {
-        group = vim.api.nvim_create_augroup("DapLangConfigs", { clear = true }),
-        pattern = { "c", "cpp", "go", "javascript", "typescript" },
-        once = true,
-        callback = function()
-          vim.schedule(function()
-            local function load_dap_config(name, lang)
-              if lang then
-                local lt_ok, lt = pcall(require, "core.lang_toggle")
-                if lt_ok and not lt.is_enabled(lang) then
-                  return
-                end
-              end
-              local ok, err = pcall(require, "dap_configs." .. name)
-              if not ok and (type(err) ~= "string" or not err:match "module .* not found") then
-                vim.notify("DAP config error (" .. name .. "): " .. tostring(err), vim.log.levels.WARN)
-              end
-            end
-            load_dap_config("cpp", "cpp")
-            load_dap_config("go", "go")
-            load_dap_config("web", "web")
-          end)
-        end,
-      })
+      -- Adapters and configurations come from the enabled language packs and
+      -- are registered here, when nvim-dap loads, so they exist for every
+      -- buffer (previously a FileType `once` autocmd created after nvim-dap
+      -- loaded missed the buffers that were already open).
+      for _, entry in ipairs(require("core.lang").collect.dap()) do
+        local ok, err = pcall(entry.fn, dap, require("core.lang").opts(entry.pack))
+        if not ok then
+          vim.notify(("DAP setup for %s failed: %s"):format(entry.pack, err), vim.log.levels.WARN)
+        end
+      end
     end,
   },
   {
@@ -181,28 +154,5 @@ return {
     lazy = true, -- Loaded as dependency of nvim-dap
     dependencies = { "mfussenegger/nvim-dap", "nvim-treesitter/nvim-treesitter" },
     opts = { commented = true },
-  },
-  -- JavaScript/TypeScript debug adapter
-  {
-    "mxsdev/nvim-dap-vscode-js",
-    ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
-    dependencies = {
-      "mfussenegger/nvim-dap",
-    },
-    opts = {
-      adapters = { "node", "chrome", "pwa-node" },
-    },
-  },
-  {
-    "jay-babu/mason-nvim-dap.nvim",
-    cmd = { "DapInstall", "DapUninstall" },
-    dependencies = {
-      "mason-org/mason.nvim",
-      "mfussenegger/nvim-dap",
-    },
-    opts = {
-      ensure_installed = { "codelldb", "python", "js-debug-adapter", "delve" },
-      automatic_installation = false,
-    },
   },
 }

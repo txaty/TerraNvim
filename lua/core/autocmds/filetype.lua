@@ -20,16 +20,6 @@ function M.setup()
       vim.opt_local.breakindent = true
     end,
   })
-
-  -- Python specific folding config
-  autocmd("FileType", {
-    group = augroup "python_settings",
-    pattern = "python",
-    callback = function()
-      vim.opt_local.foldenable = false
-      vim.opt_local.foldmethod = "manual"
-    end,
-  })
 end
 
 return M

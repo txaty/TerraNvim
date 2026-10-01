@@ -1,60 +1,40 @@
 return {
   {
-    -- branch = "main" (not "master"): the master branch is archived and its
-    -- query_predicates.lua is incompatible with Neovim 0.12+, which changed
-    -- match tables from single TSNodes to arrays of TSNodes. This caused the
-    -- "attempt to call method 'range' (a nil value)" conceal_line error on
-    -- every markdown open. The main branch removes query_predicates.lua
-    -- entirely (directives upstreamed to Neovim core) and requires Neovim 0.11+.
-    -- API change: require("nvim-treesitter").setup(opts) replaces the old
-    -- require("nvim-treesitter.configs").setup(opts) pattern. ensure_installed
-    -- is passed directly to setup(); the .install() method no longer exists.
-    -- lazy = false: the main branch README explicitly states it does not support
-    -- lazy-loading.
+    -- branch = "main": master is frozen for Neovim 0.11 and its
+    -- query_predicates.lua breaks on Neovim 0.12's match tables (arrays of
+    -- nodes), e.g. the markdown conceal_line error. The main branch requires
+    -- Neovim 0.12 and the tree-sitter CLI (>= 0.26.1) to build parsers.
+    -- Its setup() only takes install_dir: there is no ensure_installed (it is
+    -- silently ignored), and it does not support lazy-loading. Parsers are
+    -- installed by core.lang.install for enabled language packs.
     "nvim-treesitter/nvim-treesitter",
     version = false,
     branch = "main",
     lazy = false,
     build = ":TSUpdate",
-    opts = {
-      ensure_installed = {
-        "bash",
-        "c",
-        "diff",
-        "html",
-        "javascript",
-        "jsdoc",
-        "json",
-        "lua",
-        "luadoc",
-        "luap",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "query",
-        "regex",
-        "toml",
-        "tsx",
-        "typescript",
-        "vim",
-        "vimdoc",
-        "yaml",
-      },
-    },
-    config = function(_, opts)
-      -- setup() accepts ensure_installed directly in the main branch API
-      require("nvim-treesitter").setup(opts)
+    config = function()
+      require("nvim-treesitter").setup {}
 
-      -- Enable treesitter highlighting and indentation for all filetypes
+      local ts = require "core.lang.treesitter"
       vim.api.nvim_create_autocmd("FileType", {
-        callback = function()
-          pcall(vim.treesitter.start)
-          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        group = vim.api.nvim_create_augroup("core_treesitter", { clear = true }),
+        callback = function(ev)
+          ts.attach(ev.buf)
         end,
       })
 
-      -- Set folding after treesitter loads (deferred from options.lua for faster startup)
-      -- Use native Neovim 0.11+ foldexpr (faster than vimscript nvim_treesitter#foldexpr)
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "VeryLazy",
+        once = true,
+        callback = function()
+          local install = require "core.lang.install"
+          if install.auto_allowed() then
+            install.parsers(ts.base_parsers)
+          end
+        end,
+      })
+
+      -- Native treesitter folding (foldlevel=99 in options.lua keeps folds open).
       vim.opt.foldmethod = "expr"
       vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     end,

@@ -6,7 +6,7 @@
 -- wording differed. This factory holds the shared behaviour so those modules
 -- are just their configuration.
 --
--- Not to be confused with core.lang_toggle, which persists a *map* of
+-- Not to be confused with core.lang.state, which persists a *map* of
 -- per-language flags and has its own registry and notifications.
 
 local persist = require "core.persist"

@@ -1,111 +1,149 @@
--- Language support panel (Telescope picker)
--- Extracted from core/commands/lang.lua for modularity
+-- :LangPanel — enable/disable language packs, install their tools, set options.
+-- Built on Snacks.picker; falls back to vim.ui.select without snacks.
 local M = {}
 
-function M.open()
-  local ok = pcall(require, "telescope")
-  if not ok then
-    vim.notify("Telescope is required for LangPanel", vim.log.levels.ERROR)
-    return
-  end
+local function lang()
+  return require "core.lang"
+end
 
-  local lang_ok, lang_toggle = pcall(require, "core.lang_toggle")
-  if not lang_ok then
-    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
-    return
-  end
+---@param name string
+---@return string
+local function summary(name)
+  local install = require "core.lang.install"
+  local missing = lang().is_enabled(name) and #install.missing_tools { name } + #install.missing_parsers { name } or 0
+  return missing > 0 and (" · %d to install"):format(missing) or ""
+end
 
-  local pickers_ok, pickers = pcall(require, "telescope.pickers")
-  local finders_ok, finders = pcall(require, "telescope.finders")
-  local actions_ok, actions = pcall(require, "telescope.actions")
-  local action_state_ok, action_state = pcall(require, "telescope.actions.state")
-  local conf_ok, conf = pcall(function()
-    return require("telescope.config").values
-  end)
-
-  if not (pickers_ok and finders_ok and actions_ok and action_state_ok and conf_ok) then
-    vim.notify("Failed to load Telescope components", vim.log.levels.ERROR)
-    return
-  end
-
-  local function get_entries()
-    local entries = {}
-    local langs = lang_toggle.get_all_languages()
-    for _, lang in ipairs(langs) do
-      local info = lang_toggle.languages[lang]
-      local enabled = lang_toggle.is_enabled(lang)
-      table.insert(entries, {
-        lang = lang,
-        name = info.name,
-        description = info.description,
-        enabled = enabled,
-      })
-    end
-    return entries
-  end
-
-  local function make_finder()
-    return finders.new_table {
-      results = get_entries(),
-      entry_maker = function(entry)
-        local icon = entry.enabled and "+" or "-"
-        local status = entry.enabled and "Enabled " or "Disabled"
-        local display = string.format("%s %-10s [%s] %s", icon, entry.name, status, entry.description)
-        return {
-          value = entry,
-          display = display,
-          ordinal = entry.name .. " " .. entry.lang,
-        }
-      end,
+local function items()
+  local out = {}
+  for _, name in ipairs(lang().names()) do
+    local pack = lang().get(name)
+    out[#out + 1] = {
+      name = name,
+      enabled = lang().is_enabled(name),
+      text = name .. " " .. (pack.title or "") .. " " .. (pack.description or ""),
+      title = pack.title or name,
+      description = pack.description or "",
     }
   end
+  return out
+end
 
-  local picker_opts = {
-    prompt_title = "  Language Support Panel",
-    results_title = "Toggle languages (requires restart)",
-    previewer = false,
-    layout_config = {
-      width = 0.7,
-      height = 0.5,
+local function toggle(name)
+  if lang().is_enabled(name) then
+    lang().disable(name)
+  else
+    lang().enable(name)
+  end
+end
+
+local function choose_option(name)
+  local options = lang().get(name).options or {}
+  local keys = vim.tbl_keys(options)
+  if #keys == 0 then
+    vim.notify((lang().get(name).title or name) .. " has no options")
+    return
+  end
+  table.sort(keys)
+  vim.ui.select(keys, {
+    prompt = name .. " option",
+    format_item = function(key)
+      return ("%s = %s  (%s)"):format(key, tostring(lang().opts(name)[key]), options[key].desc)
+    end,
+  }, function(key)
+    if not key then
+      return
+    end
+    vim.ui.select(options[key].choices or {}, { prompt = name .. "." .. key }, function(value)
+      if value ~= nil then
+        vim.cmd.LangOption { args = { name, key, tostring(value) } }
+      end
+    end)
+  end)
+end
+
+function M.open()
+  local ok, Snacks = pcall(require, "snacks")
+  if not ok then
+    local list = items()
+    vim.ui.select(list, {
+      prompt = "Language packs (toggle)",
+      format_item = function(item)
+        return ("%s %-12s %s"):format(item.enabled and "●" or "○", item.title, item.description)
+      end,
+    }, function(item)
+      if item then
+        toggle(item.name)
+      end
+    end)
+    return
+  end
+
+  local function act(fn)
+    return function(picker, item)
+      if item then
+        fn(item.name)
+        picker:find { refresh = true }
+      end
+    end
+  end
+
+  Snacks.picker.pick {
+    title = "Language packs  <CR> toggle · <C-i> install · <C-o> options · <C-r> restart",
+    finder = function()
+      return items()
+    end,
+    format = function(item)
+      return {
+        { item.enabled and "● " or "○ ", item.enabled and "DiagnosticOk" or "Comment" },
+        { ("%-12s"):format(item.title), item.enabled and "Normal" or "Comment" },
+        { item.description, "Comment" },
+        { summary(item.name), "DiagnosticWarn" },
+      }
+    end,
+    layout = { preset = "select" },
+    confirm = act(toggle),
+    actions = {
+      lang_install = act(function(name)
+        require("core.lang.install").ensure { name }
+      end),
+      lang_options = function(picker, item)
+        if item then
+          picker:close()
+          choose_option(item.name)
+        end
+      end,
+      lang_restart = function()
+        vim.cmd.restart()
+      end,
+    },
+    win = {
+      input = {
+        keys = {
+          ["<C-i>"] = { "lang_install", mode = { "i", "n" } },
+          ["<C-o>"] = { "lang_options", mode = { "i", "n" } },
+          ["<C-r>"] = { "lang_restart", mode = { "i", "n" } },
+        },
+      },
     },
   }
+end
 
-  local picker = pickers.new(picker_opts, {
-    finder = make_finder(),
-    sorter = conf.generic_sorter(picker_opts),
-    attach_mappings = function(prompt_bufnr, map)
-      -- Toggle on Enter
-      actions.select_default:replace(function()
-        local selection = action_state.get_selected_entry()
-        if selection then
-          lang_toggle.toggle(selection.value.lang)
-          local current_picker = action_state.get_current_picker(prompt_bufnr)
-          current_picker:refresh(make_finder(), { reset_prompt = false })
-        end
-      end)
-
-      -- Helper to map an action for both insert and normal modes
-      local function map_action(key, action_fn)
-        local handler = function()
-          local selection = action_state.get_selected_entry()
-          if selection then
-            action_fn(selection.value.lang)
-            local current_picker = action_state.get_current_picker(prompt_bufnr)
-            current_picker:refresh(make_finder(), { reset_prompt = false })
-          end
-        end
-        map("i", key, handler)
-        map("n", key, handler)
-      end
-
-      -- Enable with 'e', Disable with 'd'
-      map_action("e", lang_toggle.enable)
-      map_action("d", lang_toggle.disable)
-
-      return true
-    end,
-  })
-  picker:find()
+---Notify the status of one pack or all packs.
+---@param name? string
+function M.status(name)
+  local lines = {}
+  for _, item in ipairs(items()) do
+    if not name or item.name == name then
+      lines[#lines + 1] = ("%s %-12s %s%s"):format(
+        item.enabled and "●" or "○",
+        item.title,
+        item.description,
+        summary(item.name)
+      )
+    end
+  end
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Language packs" })
 end
 
 return M

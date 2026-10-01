@@ -106,12 +106,11 @@ local function verify_load_order()
       end,
     },
     {
-      name = "mason-lspconfig available for language extensions",
+      name = "language packs load without errors",
       check = function()
-        -- Verify mason-lspconfig can be required (language files depend on it)
-        local ok = pcall(require, "mason-lspconfig")
-        if not ok then
-          return false, "mason-lspconfig module not available"
+        local errors = require("core.lang").load_errors()
+        if next(errors) then
+          return false, "failed packs: " .. table.concat(vim.tbl_keys(errors), ", ")
         end
         return true
       end,

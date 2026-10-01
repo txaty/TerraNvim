@@ -26,16 +26,16 @@ return {
       -- Keep this list in sync with the prefixes actually in use — an
       -- unregistered prefix shows up in the which-key popup as a bare key with
       -- no label, and a registered-but-unused one advertises a group that is
-      -- empty. Groups are verified against docs/keymaps.md.
+      -- empty. Groups are verified against docs/keymaps.md. Language-specific
+      -- groups (<leader>R Rust, <leader>p Python, ...) are buffer-local and come
+      -- from the language packs (core.lang.runtime), flushed below.
       wk.add {
         -- Groups (prefixes with several mappings underneath)
         { "<leader>a", group = "AI", icon = "󰚩" },
         { "<leader>b", group = "Buffers", icon = "󰈔" },
         { "<leader>c", group = "Colors", icon = "󰏘" },
-        { "<leader>C", group = "Crates", icon = "󰏗" },
         { "<leader>d", group = "Debug", icon = "󰃤" },
         { "<leader>f", group = "Find", icon = "󰍉" },
-        { "<leader>F", group = "Flutter", icon = "󰙅" },
         { "<leader>g", group = "Git", icon = "󰊢" },
         { "<leader>gv", group = "Diffview", icon = "󰆏" },
         { "<leader>i", group = "Image", icon = "󰋩" },
@@ -43,13 +43,10 @@ return {
         { "<leader>L", group = "Language", icon = "󰗊" },
         { "<leader>lp", group = "LSP Peek", icon = "󰈈" },
         { "<leader>lw", group = "LSP Workspace", icon = "󰉖" },
-        { "<leader>m", group = "Markdown", icon = "󰍔" },
         { "<leader>n", group = "Notify", icon = "󰂞" },
         { "<leader>o", group = "Tasks", icon = "󰑮" },
-        { "<leader>p", group = "Python", icon = "󰌠" },
         { "<leader>q", group = "Session", icon = "󰁯" },
         { "<leader>r", group = "Remote", icon = "󰢹" },
-        { "<leader>R", group = "Rust", icon = "󱘗" },
         { "<leader>s", group = "Search/Symbols", icon = "󰑑" },
         { "<leader>t", group = "Test", icon = "󰙨" },
         { "<leader>T", group = "Terminal", icon = "" },
@@ -65,6 +62,7 @@ return {
         { "<leader>j", icon = "󰗈", desc = "Split/Join toggle" },
         { "<leader>S", icon = "󰛔", desc = "Search & Replace" },
       }
+      require("core.lang.runtime").wk_flush()
     end,
   },
 }

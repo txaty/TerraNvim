@@ -4,7 +4,6 @@ local M = {}
 
 local command_modules = {
   "core.commands.ai",
-  "core.commands.lang",
   "core.commands.cleanup",
   "core.commands.ui",
   "core.commands.session",

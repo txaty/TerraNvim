@@ -6,7 +6,7 @@ function M.register()
     prefix = "AI",
     module = "core.ai_toggle",
     label = "AI features",
-    toggle_desc = "Toggle AI features (Copilot, CopilotChat, Avante)",
+    toggle_desc = "Toggle AI features (Claude Code, Sidekick)",
   }
 end
 

@@ -1,682 +1,196 @@
-# Neovim Configuration
-
-A modern, modular Neovim configuration focusing on **productivity, language support, and explicit trust boundaries**.
-
-## Features
-
-- **Fast Startup**: Lazy-loading plugins for instant startup
-- **Full Language Support**: Python, Go, Rust, JavaScript/TypeScript, Flutter, LaTeX, Typst
-- **AI Integration**: Copilot with chat interface and inline suggestions (toggleable)
-- **Testing**: Integrated test runner (neotest) for multiple languages
-- **Debugging**: Debug Adapter Protocol (DAP) support with visual breakpoints
-- **Project Navigation**: Snacks picker + nvim-tree for fast file discovery
-- **Code Quality**: LSP, linting, and formatting with explicit opt-in automation
-- **Git Integration**: Gitsigns hunk operations, diffview, lazygit TUI
-- **Remote Development**: VS Code Remote-like experience with distant.nvim
-- **Session Management**: Session restore and opt-in persistence
-- **50+ Themes**: Dark, light, and custom ergonomic themes with smart switching
-- **Modular Language Toggle**: Enable/disable language tooling per-language
-
-## Performance Notes
-
-- Some UI-only plugins load on `BufReadPost` instead of `BufReadPre` so file contents render before decorative integrations attach.
-- Inline git blame is off by default to avoid steady cursor-hold git work. Toggle it when needed with `<leader>gB`.
-- Fallback word-highlighting caches LSP `documentHighlight` support per buffer to avoid repeated client scans on every `CursorHold`.
-
-## Security Model
-
-This configuration is hardened to prefer explicit trust over convenience.
-
-- No project-local `.nvim.lua` or `.exrc` files are executed.
-- Modelines are disabled.
-- Automatic plugin bootstrap is disabled.
-- Automatic plugin installation and build hooks are restricted.
-- Automatic session restore/save is disabled by default.
-- Automatic startup cleanup is disabled by default.
-- Automatic format-on-save and lint-on-write are disabled by default.
-- Automatic LSP startup is disabled by default.
-- AI integrations are disabled by default.
-- Mutable editor state is written only under Neovim `stdpath("data"|"state"|"cache")` directories.
-
-Opt-in flags for trusted environments:
-
-```lua
-vim.g.enable_session_persistence = true  -- default enabled; toggle with :SessionToggle or <leader>qp
-vim.g.enable_auto_cleanup = true
-vim.g.enable_lsp_automatic_start = true
-vim.g.enable_format_on_save = true
-vim.g.enable_lint_on_write = true
-```
-
-## Quick Start
-
-### Prerequisites
-
-- Neovim 0.11+ (required for new LSP API)
-- Git
-- Node.js 18+ (for Copilot)
-- Python 3.8+ (for Python support)
-- Go 1.19+ (for Go support)
-- Rust 1.70+ (for Rust support)
-- lazygit (optional, for git TUI)
-
-### Installation
-
-```bash
-# Clone configuration
-git clone https://github.com/yourusername/nvim ~/.config/nvim
-
-# Install lazy.nvim manually (automatic bootstrap is intentionally disabled)
-git clone --filter=blob:none https://github.com/folke/lazy.nvim.git \
-  --branch=stable ~/.local/share/nvim/lazy/lazy.nvim
-
-# Start Neovim, then install plugins explicitly
-nvim
-# :Lazy sync
-
-# Install language servers and tools explicitly
-# :MasonInstallAll
-# :Mason
-```
-
-### First Run Checklist
-
-After installation, verify everything works:
-
-```bash
-# Inside Neovim
-:checkhealth           # Run comprehensive health check
-:LspInfo               # Verify LSP servers are available
-:ConformInfo           # Check formatter configuration
-:MasonInstallAll       # Install the curated tool set explicitly
-:Mason                 # Inspect/install individual tools
-:TSUpdate              # Install/update treesitter parsers explicitly
-```
-
-## Usage Guide
-
-### Essential Keybindings
-
-**Press `<leader>` (Space) to see all available keybindings** via which-key popup.
-
-Common workflows:
-
-- **Find files**: `<leader>ff` (Snacks picker)
-- **Search text**: `<leader>fg` (Live grep)
-- **Rename symbol**: `<leader>lr` (LSP rename)
-- **Format code**: `<leader>lf` (manual format)
-- **Git stage**: `<leader>gs` (stage hunk)
-- **Run tests**: `<leader>tn` (nearest test)
-- **Debug**: `<leader>db` (toggle breakpoint)
-- **AI Chat**: `<leader>aa` (Copilot)
-- **Switch theme**: `<leader>cc` (interactive picker)
-- **Remote connect**: `<leader>rc` (distant.nvim)
-
-See **[docs/keymaps.md](docs/keymaps.md)** for complete keybinding reference.
-
-### Language Setup
-
-#### Python
-
-```bash
-# 1. Create virtual environment in project
-python -m venv .venv
-
-# 2. Inside Neovim, select virtualenv
-<leader>pv
-
-# 3. Enable automatic LSP startup in trusted environments or use :LspStart
-```
-
-**Recommended tools:** `pyright`, `black`, `isort`, `ruff`
-
-#### Go
-
-Open any `.go` file, then use `:LspStart` or set `vim.g.enable_lsp_automatic_start = true`.
-
-**Recommended tools:** `gopls`, `goimports`, `delve` (debugger)
-
-#### Rust
-
-Install Rust via `rustup`, then open `.rs` file.
-
-**Recommended tools:** `rust-analyzer`, `rustfmt`, `codelldb` (debugger)
-
-**Rust keybindings** (use `<leader>R*` prefix):
-```
-<leader>Rr    # Runnables
-<leader>RR    # Rerun last runnable
-<leader>Rt    # Testables
-<leader>RT    # Rerun last test
-<leader>RD    # Debuggables
-<leader>Rd    # Debug target
-<leader>Rc    # Open Cargo.toml
-```
-
-**Crates keybindings** (in Cargo.toml):
-```
-<leader>Cv    # Show versions
-<leader>Cu    # Upgrade crate
-<leader>CA    # Upgrade all crates
-```
-
-#### TypeScript/JavaScript
-
-Open `.ts`, `.tsx`, `.js`, `.jsx` files, then use `:LspStart` or enable automatic LSP startup.
-
-**Recommended tools:** `typescript-language-server`, `prettier`, `eslint`
-
-#### Flutter
-
-```bash
-# 1. Install Flutter SDK (not via Mason)
-flutter --version
-
-# 2. Open .dart file
-# 3. Use Flutter keybindings:
-<leader>FR    # Run app
-<leader>Fr    # Hot restart
-<leader>Fl    # Hot reload
-```
-
-#### Lua
-
-Write Lua, then use `:LspStart` or enable automatic LSP startup. Formatting uses `stylua`.
-
-### Testing
-
-Run tests with neotest:
-
-```
-<leader>tn    # Nearest test
-<leader>tf    # All tests in file
-<leader>ts    # Entire test suite
-<leader>to    # Show output
-```
-
-Supported: Python, Go, Rust, JavaScript
-
-### Debugging
-
-Set breakpoints and debug:
-
-```
-<leader>db    # Toggle breakpoint
-<leader>dc    # Continue / start
-<leader>di    # Step into
-<leader>do    # Step over
-<leader>dO    # Step out
-<leader>dx    # Stop debugging
-```
-
-Supported: Python, Go, Rust
-
-### Git Workflow
-
-**Stage changes:**
-```
-<leader>gs    # Stage hunk (or visual selection)
-<leader>gS    # Stage entire buffer
-<leader>gp    # Preview changes
-<leader>gB    # Toggle inline git blame
-```
-
-**View history:**
-```
-<leader>gd    # Diff current file
-<leader>gD    # Diff against HEAD
-<leader>gvo   # Open Diffview
-<leader>gvf   # File history
-<leader>gvh   # Repo history
-```
-
-**Launch Git UI:**
-```
-<leader>gg    # Open lazygit (requires `lazygit` CLI)
-```
-
-### AI Assistance (Copilot)
-
-AI integrations are disabled by default. Enable them explicitly for trusted codebases:
-
-```
-:AIEnable
-# Restart Neovim
-```
-
-Chat with Copilot:
-
-```
-<leader>aa    # Toggle chat
-<leader>aq    # Quick question
-<leader>ae    # Explain this code
-<leader>at    # Generate tests
-<leader>af    # Fix code
-<leader>ar    # Review code
-```
-
-Inline suggestions appear automatically. Accept with `<M-l>` (Alt+L).
-
-**Toggle AI features** (useful for sensitive codebases):
-```
-<leader>ai    # Toggle AI on/off (requires restart)
-:AIStatus     # Check current state
-```
-
-### Remote Development
-
-Connect to remote servers (VS Code Remote-like experience):
-
-```
-<leader>rc    # Connect to remote (SSH)
-<leader>ro    # Open remote file/directory
-<leader>rf    # Find files on remote
-<leader>rg    # Live grep on remote
-<leader>rd    # Disconnect
-```
-
-Remote open/connect/shell mappings validate input and ask for confirmation before launching privileged actions.
-Remote LSP still follows the same secure default: use `:LspStart` or opt into automatic startup.
-
-### File Navigation
-
-**Find files:**
-```
-<leader>ff    # Find by name
-<leader>fg    # Search by content
-<leader>fb    # Switch buffer
-<leader>fr    # Recent files
-<leader>fe    # Toggle sidebar
-```
-
-Use **Flash** for instant navigation:
-```
-s             # Press 's' + 2 chars = jump anywhere
-S             # Select code block by scope
-```
-
----
-
-## Troubleshooting
-
-### Security Defaults
-
-If you expect old convenience behavior, check these defaults first:
-
-```lua
-vim.g.enable_session_persistence = true  -- default enabled; toggle with :SessionToggle or <leader>qp
-vim.g.enable_auto_cleanup = true
-vim.g.enable_lsp_automatic_start = true
-vim.g.enable_format_on_save = true
-vim.g.enable_lint_on_write = true
-```
-
-All are off unless opted in, except `enable_session_persistence`, which defaults to **enabled** via `core/session_toggle.lua` (state persisted in `$XDG_DATA_HOME/nvim/session_config.json`). Disable with `:SessionDisable`.
-
-### LSP Not Attaching
-
-**Check status:**
-```
-:LspInfo          # See active servers for current buffer
-:checkhealth      # Full diagnostics
-```
-
-**Install missing tools:**
-```
-:MasonInstallAll  # Install the curated tool set explicitly
-:Mason            # Inspect/install individual tools
-```
-
-**Common issue:** Python virtualenv not selected
-```
-<leader>pv        # Select Python virtualenv
-```
-
-### Formatter Not Working
-
-**Check configuration:**
-```
-:ConformInfo      # View formatter setup
-```
-
-**Verify tool installed:**
-```
-:Mason            # Search for formatter (e.g., "black", "prettier")
-```
-
-**Manual format:**
-```
-<leader>lf        # Format current file
-```
-
-### Copilot Not Working
-
-**Verify authentication:**
-```
-:Copilot setup
-```
-
-**Check status:**
-```
-:Copilot status
-```
-
-**Requirements:**
-- Node.js 18+ installed
-- GitHub account with Copilot subscription
-
-### Plugin Installation Failed
-
-**Resync plugins:**
-```
-:Lazy sync
-:TSUpdate
-```
-
-**Resolve conflicts:**
-```
-:Lazy clean       # Remove unused plugins
-:Lazy restore     # Restore to last known good state
-```
-
-### Slow Performance
-
-**Profile startup:**
-```
-:Lazy profile     # Shows slowest plugins
-```
-
-**Check health:**
-```
-:checkhealth      # Look for warnings/errors
-```
-
-**Reduce plugins:** Edit `lua/plugins/` to disable unused plugins.
-
-### DAP (Debugging) Not Working
-
-**Check adapter installed:**
-```
-:Mason            # Search for debugger (e.g., "python-debugpy", "delve", "codelldb")
-```
-
-**Set breakpoint and debug:**
-```
-<leader>db        # Toggle breakpoint
-<leader>dc        # Start debugging
-```
-
-**View logs:**
-```
-:DapShowLog
-```
-
-### Git Commands Not Available
-
-**Install lazygit (optional, for git UI):**
-```bash
-# macOS
-brew install lazygit
-
-# Linux
-sudo apt install lazygit
-
-# Or download from https://github.com/jesseduffield/lazygit/releases
-```
-
-### Treesitter Parser Missing
-
-**Update all parsers:**
-```
-:TSUpdate
-```
-
-**Or in shell:**
-```bash
-nvim --headless '+TSUpdateSync' +qa
-```
-
-### Security Re-Audit After Plugin Updates
-
-After changing plugin specs or updating plugins, re-check these areas:
-
-1. Search for new external execution paths:
-   `rg -n "(vim\\.system|system\\(|jobstart|termopen|build\\s*=|run\\s*=|post_install|autocmd)" lua`
-2. Search for filesystem writes and deletes:
-   `rg -n "(writefile|fs_open\\(|fs_write\\(|delete\\()" lua`
-3. Search for new network/bootstrap behavior:
-   `rg -n "(git clone|checker|update\\(|MasonInstall|DistantInstall|Copilot|Octo)" lua`
-4. Review `lazy-lock.json` for newly added plugins and branch-based dependencies.
-
-## Shared Machine / Server Guidance
-
-- Keep AI disabled unless the host and codebase are explicitly trusted.
-- Leave automatic session restore/save disabled on shared hosts.
-- Leave automatic cleanup disabled unless you are comfortable with Neovim pruning its own state directories.
-- Prefer manual `:LspStart`, `:Mason`, `:Lazy sync`, and `:TSUpdate`.
-- Treat remote development commands and external viewers as privileged actions; this config asks for confirmation before launching them from keymaps.
-
----
+# nvim-config
+
+A fast, general-purpose Neovim distribution for Neovim 0.12. Languages come as
+**language packs**: one data file per language that you switch on with
+`:LangEnable`. Nothing language-specific is hard-wired, and startup stays
+around 25 ms.
+
+- **Language packs** for Lua, Bash, JSON, YAML, TOML, Markdown, Docker,
+  C/C++ (embedded-ready), Go, Python, Rust, TypeScript/JavaScript, HTML/CSS,
+  Swift, Kotlin, Solidity, LaTeX and Typst. Each pack bundles LSP, formatting,
+  linting, debugging, tests and keymaps. Adding a language is one file
+  ([docs/languages.md](docs/languages.md)).
+- **Batteries on, switchable**: language servers start automatically,
+  formatting and linting run on save, and missing tools for enabled languages
+  install on first use. Every behaviour is a setting, and most are toggles.
+- **Modern stack**: lazy.nvim, snacks.nvim (picker, explorer, terminal,
+  lazygit, dashboard), blink.cmp, `vim.lsp.config` with nvim-lspconfig as
+  data, conform, nvim-lint, nvim-treesitter (main), nvim-dap, neotest,
+  diffview-plus, gitsigns, noice, which-key, flash, trouble.
+- **AI, opt-in**: Claude Code integration (claudecode.nvim) and a terminal for
+  any AI CLI (sidekick.nvim). Both stay off until you enable them.
+- **Neovim 0.12 native** where it is good enough: default LSP keymaps,
+  incremental selection, `:restart`, `:Undotree`, `winborder`, EditorConfig.
+- **Hardened defaults**: no modelines, no project-local config execution,
+  pinned plugins, writes only under Neovim's own data directories.
+
+## Requirements
+
+- Neovim **0.12+**, git, a C compiler, [`tree-sitter` CLI](https://github.com/tree-sitter/tree-sitter)
+  ≥ 0.26.1 (builds parsers), `rg` and `fd`.
+- Optional: `lazygit`, a [Nerd Font](https://www.nerdfonts.com/), and per
+  language the toolchain itself (`go`, `cargo`, `node`, Xcode, JDK 17+, ...).
+  Language servers and tools come from Mason automatically.
+
+## Install
+
+```sh
+mv ~/.config/nvim ~/.config/nvim.bak 2>/dev/null   # keep an existing config
+git clone https://github.com/txaty/nvim-config ~/.config/nvim
+nvim    # lazy.nvim bootstraps itself and installs the pinned plugins
+```
+
+Then in Neovim:
+
+1. `<leader>Lp` (Space, L, p): enable the languages you use.
+2. Open a file of each. Tools install in the background, and the server
+   attaches when its install finishes.
+3. `:checkhealth core.lang`: see what each enabled language has.
+
+Setting up a machine non-interactively:
+
+```sh
+nvim --headless "+Lazy! restore" +qa
+nvim --headless "+LangEnable go python rust typescript" "+LangInstall!" +qa
+```
+
+## Languages
+
+| Command | |
+|---|---|
+| `<leader>Lp` / `:LangPanel` | Enable/disable, install, options, restart |
+| `:LangEnable` / `:LangDisable` / `:LangToggle {pack...}` | Persisted per machine |
+| `:LangOption {pack} {option} {value}` | e.g. `typescript server tsc`, `python server pyright`, `cpp query_driver /opt/homebrew/bin/arm-none-eabi-*` |
+| `:LangInstall[!] [pack...]` | Install Mason tools and parsers now |
+| `:checkhealth core.lang` / `<leader>Lh` | Per-pack status |
+
+Enabled on a fresh install: lua, bash, json, yaml, toml, markdown. The full
+table, the schema and a walkthrough for adding a language are in
+**[docs/languages.md](docs/languages.md)**.
 
 ## Configuration
 
-### Change Keybindings
-
-Edit `lua/core/keymaps.lua`:
-
-```lua
-map("n", "<leader>ff", function()
-  Snacks.picker.files()
-end, { desc = "Find files" })
-```
-
-### Enable/Disable Plugins
-
-Each plugin file in `lua/plugins/` can be edited or removed:
-
-```lua
--- Disable plugin by returning empty table
-return {}
-
--- Or set enabled = false
-{ "plugin-name", enabled = false }
-```
-
-### Enable/Disable Language Support
-
-Toggle entire language toolchains (LSP, formatter, linter, treesitter):
-
-```
-<leader>Lp          # Open language support panel (Telescope)
-<leader>Ls          # Show status of all languages
-:LangToggle python  # Toggle Python support
-:LangEnable rust    # Enable Rust support
-:LangDisable web    # Disable Web (JS/TS) support
-```
-
-**Inside Language Panel:**
-- `e` - Enable selected language
-- `d` - Disable selected language
-- `<CR>` - Toggle selected language
-
-Supported: `python`, `rust`, `go`, `web` (JS/TS), `flutter`, `latex`, `typst`
-
-Changes require Neovim restart to take effect. State persisted across sessions.
-
-### Change Colorscheme
-
-**Interactive switching (recommended):**
-```
-<leader>cc    # Open interactive theme picker
-<leader>cd    # Switch to last-used dark theme
-<leader>cl    # Switch to last-used light theme
-<leader>cp    # Switch to txaty custom theme
-<leader>cn    # Cycle to next theme
-<leader>cN    # Cycle to previous theme
-```
-
-**78 themes available (50 dark, 26 light, 2 custom):**
-- **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, github_dark variants, everforest, material, vscode, and more
-- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, papercolor, github_light variants, and more
-- **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
-
-Theme preference is automatically saved and restored on next startup.
-
-### Add Language Support
-
-Create file `lua/plugins/mylang.lua`:
+Settings live in [`lua/core/settings.lua`](lua/core/settings.lua). Override
+them in `lua/user/settings.lua` (gitignored; copy
+[`lua/user/settings.example.lua`](lua/user/settings.example.lua)):
 
 ```lua
 return {
-  { "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      vim.list_extend(opts.ensure_installed, { "mylang" })
-    end,
-  },
-  { "williamboman/mason-lspconfig.nvim",
-    opts = function(_, opts)
-      table.insert(opts.ensure_installed, "mylang-lsp")
-    end,
-  },
+  format = { on_save = false },
+  langs = { default = { "lua", "go", "python" }, options = { typescript = { server = "tsc" } } },
+  theme = { dark = "kanagawa-wave", light = "kanagawa-lotus" },
 }
 ```
 
----
+| Setting | Default | |
+|---|---|---|
+| `lsp.auto_start` | `true` | Start servers of enabled packs |
+| `format.on_save` / `format.timeout_ms` | `true` / `1000` | Toggle at runtime: `<leader>uf`, per buffer `<leader>uF` |
+| `lint.enabled` | `true` | Toggle: `<leader>ul` |
+| `install.auto` | `true` | Install missing tools/parsers of enabled packs on first use |
+| `langs.default` / `langs.options` / `langs.hint_disabled` | see above | Fresh-install packs, per-pack option defaults, hint for disabled packs |
+| `session.persistence` | `true` | Default for `:SessionToggle` (per-directory sessions) |
+| `ai.enabled` | `false` | Default for `:AIToggle` |
+| `cleanup.auto` | `false` | Daily sweep of stale logs/swap/undo/views (`:CleanupNvim` anytime) |
+| `editorconfig` | `true` | Honour `.editorconfig` |
+| `theme.dark` / `theme.light` | `catppuccin-mocha` / `catppuccin-latte` | Fallbacks for `<leader>cd` / `<leader>cl` |
 
-## Directory Structure
+Your own plugins go in `lua/user/plugins/*.lua` (lazy.nvim specs). Your own
+language packs go in `lua/user/langs/*.lua`.
 
-```
-~/.config/nvim/
-├── init.lua                 # Entry point
-├── lua/
-│   ├── core/               # Fundamental settings
-│   │   ├── init.lua         # Bootstrap loader
-│   │   ├── options.lua      # Vim options
-│   │   ├── keymaps.lua      # Global keybindings (non-plugin only)
-│   │   ├── lazy.lua         # Lazy.nvim bootstrap + spec imports
-│   │   ├── theme.lua                 # Theme registry (78 themes)
-│   │   ├── theme_txaty.lua           # Custom theme entry point (apply, get_palette)
-│   │   ├── theme_txaty_colors.lua    # Custom theme palette (edit colors here)
-│   │   ├── theme_txaty_highlights.lua # Custom theme highlight groups
-│   │   ├── persist.lua      # JSON config read/write with path validation
-│   │   ├── persist_flag.lua # Factory for persisted boolean toggles
-│   │   ├── ai_toggle.lua    # AI features toggle
-│   │   ├── session_toggle.lua # Session persistence toggle
-│   │   ├── lang_toggle.lua  # Language support toggle
-│   │   ├── ui_toggle.lua    # UI toggle persistence
-│   │   ├── lang_utils.lua   # Language spec helpers
-│   │   ├── cleanup.lua      # Automatic temp file cleanup
-│   │   ├── keymap_audit.lua # Keymap conflict detection
-│   │   ├── autocmds/        # Core autocommands, split by concern
-│   │   │   ├── init.lua     # setup() orchestrator
-│   │   │   ├── filetype.lua
-│   │   │   ├── cursor.lua
-│   │   │   ├── word_highlight.lua
-│   │   │   ├── persistence.lua
-│   │   │   ├── ui_state.lua
-│   │   │   └── images.lua
-│   │   ├── lifecycle/       # VimEnter orchestration (declarative steps table)
-│   │   │   ├── init.lua     # Lifecycle orchestrator
-│   │   │   ├── colorscheme.lua
-│   │   │   ├── session.lua
-│   │   │   ├── reconcile.lua
-│   │   │   └── nvim_tree.lua
-│   │   ├── ui/              # Config-owned UI (owns no plugin)
-│   │   │   ├── theme_picker.lua
-│   │   │   └── lang_panel.lua
-│   │   └── commands/        # User command definitions
-│   │       ├── init.lua     # Command registry
-│   │       ├── flag_commands.lua # Shared Toggle/Enable/Disable/Status factory
-│   │       ├── ai.lua
-│   │       ├── session.lua
-│   │       ├── lang.lua
-│   │       ├── theme.lua
-│   │       ├── cleanup.lua
-│   │       └── ui.lua
-│   └── plugins/            # Plugin specifications
-│       ├── lsp.lua          # LSP + Mason
-│       ├── colorscheme.lua  # Theme plugins (lazy, loaded on demand by core.theme)
-│       ├── copilot.lua      # AI (respects toggle)
-│       ├── remote.lua       # Remote development
-│       └── languages/       # Language-specific (needs its own import entry in core/lazy.lua)
-│           ├── python.lua
-│           ├── go.lua
-│           ├── rust.lua
-│           ├── flutter.lua
-│           └── web.lua
-├── lua/dap_configs/        # Debug adapter configs (not lua/dap/ — that name
-│                           # collides with nvim-dap's require namespace)
-├── docs/
-│   └── keymaps.md          # Keybinding reference
-├── lazy-lock.json          # Plugin versions (auto-updated)
-└── README.md               # This file
-```
+## Using it
 
----
+Press `<leader>` (Space) and wait: which-key shows everything, including
+language-specific keys in buffers of that language. Highlights:
 
-## Updates & Maintenance
+| Key | | Key | |
+|---|---|---|---|
+| `<leader>ff` / `fg` | Find files / grep | `<C-n>` | Explorer |
+| `s` | Flash jump | `<C-\>` | Terminal (your `$SHELL`) |
+| `gd`, `grr`, `gri`, `grn`, `gra`, `K` | LSP (Neovim defaults) | `<leader>lf` | Format |
+| `<leader>gg` | lazygit | `<leader>gvo` | Diffview |
+| `<leader>db` / `dc` | Breakpoint / debug | `<leader>tn` | Nearest test |
+| `<leader>cc` | Theme picker | `<leader>qr` | `:restart` |
 
-### Update Plugins
+The full reference is **[docs/keymaps.md](docs/keymaps.md)**, which also lists what
+changed in the 2026-10 modernization.
 
-```
-:Lazy sync        # Inside Neovim
-```
+### AI
 
-Or from shell:
+`<leader>ai` (or `:AIEnable`) and accept the restart prompt. Then:
 
-```bash
-nvim --headless "+lua require('lazy').sync()" +qa
-```
+- **Claude Code** (`<leader>ac`): runs the `claude` CLI in a split, connected
+  over Claude Code's IDE protocol. Claude sees your selection and open files,
+  and its edits open as diffs: `<leader>aa` accepts, `<leader>ad` rejects.
+- **sidekick** (`<C-.>`, `<leader>ak`): a persistent terminal for any AI CLI
+  (claude, codex, gemini, ...) with helpers to send the current
+  file/selection/diagnostics.
 
-### Update Treesitter Parsers
+### Themes
 
-```
-:TSUpdate         # Inside Neovim
-```
+37 themes from 12 maintained plugins, each with dark and light variants, plus
+the built-in low-saturation **txaty** pair. `<leader>cc` opens a picker with
+live preview; `<leader>cd` / `<leader>cl` switch to your last dark / light
+theme. The choice persists, including themes set with a plain `:colorscheme`.
 
-Or from shell:
+### Remote editing
 
-```bash
-nvim --headless '+TSUpdateSync' +qa
+distant.nvim was removed (unmaintained). Neovim 0.12 can attach to a remote
+instance directly: run `nvim --headless --listen 127.0.0.1:6666` on the host,
+forward the port (`ssh -L 6666:127.0.0.1:6666 host`), then `:connect
+127.0.0.1:6666` locally. Mounting with sshfs also works.
+
+## Security model
+
+- No modelines, no `.nvim.lua`/`.exrc` execution (`exrc=false`, `secure`).
+- `'shell'` is pinned to `/bin/sh` for `:!` and plugins; interactive
+  terminals use your `$SHELL` only after validating it.
+- Plugins are pinned in `lazy-lock.json` and never auto-update
+  (`checker.enabled = false`).
+- Network access happens only on: the first start (missing plugins); first use
+  of an enabled language (missing Mason tools/parsers; `install.auto = false`
+  turns this off); `:Lazy`/`:Mason`/`:LangInstall`; and AI plugins once you
+  enable them.
+- Persisted state is written only under `stdpath("data"|"state"|"cache")`,
+  never through symlinks.
+- External openers (`<leader>mo`, `<leader>io`) ask before launching.
+
+After updating plugins: review `git diff lazy-lock.json`, check new `build`
+hooks, and grep the updated plugins for `os.execute`, `io.popen` and
+`loadstring`.
+
+## Maintenance
+
+| | |
+|---|---|
+| `:Lazy update` | Update plugins (review and commit `lazy-lock.json`) |
+| `:TSUpdate` | Update treesitter parsers |
+| `:Mason` | Update tools |
+| `:checkhealth` | Everything; `:checkhealth core.lang`, `vim.lsp`, `which-key`, `vim.deprecated` in particular |
+| `:Lazy profile` | Startup profile |
+
+## Development
+
+```sh
+make check   # lint (stylua + luacheck), headless smoke tests, startup budget
+make fmt     # format Lua
+make test    # smoke tests with default, all and no language packs
 ```
 
-### Check Configuration Health
+`scripts/smoke.sh` starts this checkout headlessly with isolated state and
+checks:
 
-```bash
-nvim --headless '+checkhealth' +qa
-```
+- startup is free of errors;
+- every language pack is valid;
+- enabled packs register their servers, formatters, linters, DAP configs and
+  keymaps;
+- nothing writes to the lockfile or persisted state.
 
----
-
-## Performance Tips
-
-1. **Use relative line numbers**: `<leader>ur` for vim motion speed
-2. **Lazy-load plugins**: All plugins load only when needed
-3. **Use Flash navigation**: `s` key is faster than j/k movement
-4. **Incremental search**: `<leader>fg` for live preview
-5. **Session management**: `<leader>qs` to restore the current directory session
-
----
-
-## Getting Help
-
-- **Documentation**: See `docs/keymaps.md` for full reference
-- **In-editor help**: Press `<leader>` to see available commands
-- **Health check**: Run `:checkhealth` in Neovim
-- **Configuration**: See `CLAUDE.md` for architecture details
-- **Change history**: See `CHANGELOG.md` for notable changes and migration notes
-
----
-
-## License
-
-This configuration is a personal project. Feel free to fork and customize for your needs.
-
----
+Contributor and coding-agent notes are in [AGENTS.md](AGENTS.md);
+[CHANGELOG.md](CHANGELOG.md) records notable changes.
 
 ## Credits
 
-Based on modular Neovim best practices. Inspired by:
-- [LazyVim](https://www.lazyvim.org/)
-- [nvim-lua](https://github.com/nvim-lua/kickstart.nvim)
-- Community configurations
+Ideas borrowed from [LazyVim](https://www.lazyvim.org/),
+[AstroNvim](https://astronvim.com/), [NvChad](https://nvchad.com/) and
+[kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim). MIT licensed.

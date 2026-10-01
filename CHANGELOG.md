@@ -9,6 +9,93 @@ record, use `git log`.
 
 ## [Unreleased]
 
+The config becomes a general-purpose distribution: language support is
+data-driven, defaults are "batteries on", and stale plugins are replaced.
+Requires **Neovim 0.12**.
+
+### Added
+
+- **Language packs** (`lua/langs/*.lua`): one data file per language
+  declaring filetypes, parsers, servers, Mason tools, formatters, linters,
+  DAP, tests, plugins and buffer-local keymaps. Shipped: lua, bash, json,
+  yaml, toml, markdown (on by default), docker, cpp (embedded-ready, with a
+  remote GDB server debug config), go, python, rust, typescript, web, swift,
+  kotlin, solidity, latex, typst. Manage with `<leader>Lp` / `:LangPanel`,
+  `:LangEnable`, `:LangOption`, `:LangInstall[!]`, `:checkhealth core.lang`.
+  See docs/languages.md.
+- Missing Mason tools and treesitter parsers of enabled packs install on
+  first use (`install.auto`); servers attach when their install finishes.
+- `lua/core/settings.lua` with an optional, gitignored `lua/user/` layer
+  (`settings.lua`, `plugins/`, `langs/`).
+- Runtime toggles: `<leader>uf` / `<leader>uF` format on save (global /
+  buffer), `<leader>ul` lint, `<leader>uh` inlay hints, `<leader>uu` the
+  built-in undo tree. `<leader>qr` runs `:restart`, which is also offered
+  after changes that need it.
+- AI: claudecode.nvim (Claude Code IDE integration) and sidekick.nvim (any AI
+  CLI), behind the existing AI toggle.
+- `:colorscheme txaty` / `txaty-light`; the theme picker filters by
+  `dark`/`light` and previews live.
+- `make check` (stylua, luacheck, headless smoke tests in three language
+  modes, startup budget); AGENTS.md for contributors and coding agents.
+
+### Changed
+
+- LSP servers now start automatically, and format-on-save and linting are on
+  (all switchable). The old `vim.g.enable_*` flags were never set, so all of
+  this was silently off.
+- Servers start because an enabled pack declares them, not because Mason
+  has them installed. Non-Mason servers (sourcekit-lsp) work, and disabled
+  packs stay quiet.
+- Explorer: nvim-tree → snacks.explorer. Terminal: toggleterm →
+  Snacks.terminal, which uses your `$SHELL`. lazygit.nvim → Snacks.lazygit.
+  diffview.nvim → diffview-plus.nvim (maintained fork). Telescope removed;
+  snacks picker everywhere.
+- Python: basedpyright + ruff (format, imports, lint). TypeScript: vtsls or
+  TypeScript 7 `tsc`, Biome or prettier per project, js-debug-adapter
+  directly. Go: gofumpt, golangci-lint v2, neotest-golang. Rust:
+  rustaceanvim 9 and its neotest adapter.
+- Themes curated to 12 maintained plugins (37 themes incl. txaty).
+- LSP keymaps follow Neovim's defaults (`grr`, `gri`, `grt`, `grn`, `gra`);
+  Glance moves to `<leader>lp*`; parameter motions to `],`/`[,`;
+  language keymaps are buffer-local. See docs/keymaps.md, "Changed in the
+  2026-10 modernization".
+- EditorConfig is honoured (Neovim built-in); `winborder` is rounded.
+
+### Removed
+
+- Flutter/Dart support, distant.nvim, git-conflict.nvim, copilot.lua,
+  CopilotChat.nvim, avante.nvim, telescope.nvim, toggleterm.nvim,
+  lazygit.nvim, nvim-tree.lua, mason-lspconfig, mason-conform,
+  mason-nvim-lint, mason-nvim-dap, nvim-dap-vscode-js, neotest-go,
+  neotest-rust and 17 theme plugins.
+- The keymap audit (use `:checkhealth which-key`), the fallback word
+  highlighter (snacks.words) and the NvChad cleanup sweep.
+- CLAUDE.md and GEMINI.md: AGENTS.md is the single instructions file
+  (Claude Code reads it natively; Gemini CLI via `.gemini/settings.json`).
+
+### Fixed
+
+- Treesitter parsers and Mason tools were never installed automatically:
+  nvim-treesitter's main branch ignores `ensure_installed`, and Mason has no
+  such option.
+- mason-nvim-lint installed nvim-lint's default linters (vale, jsonlint,
+  hadolint, tflint) and nvim-lint ran them; only pack linters run now.
+- DAP configurations were missing for buffers opened before nvim-dap loaded.
+- Disabling a language dropped its plugins from `lazy-lock.json`; they are
+  now kept with `cond = false`.
+- overseer commands broken by its v2 API; refactoring.nvim maps that never
+  ran a refactor (missing `expr`); theme switching discarded colorscheme
+  options and saved the wrong variant; flash changed `f`/`t` after the first
+  jump; UI toggles leaked into floating windows and unwrapped prose; `]c`
+  broke diff navigation; mini.ai shadowed native `an`/`in`.
+
+---
+
+## 2026-08
+
+Refactors that landed between the April snapshot and the modernization.
+The theme accessors and lifecycle notes below are superseded by [Unreleased].
+
 ### Added
 
 - The custom **txaty** theme is now split into three focused files so that
@@ -129,24 +216,25 @@ The table is processed in order; each entry looks like:
 
 There is no imperative `run_sequence()` wiring to update.
 
-### Reading theme lists programmatically
+### Language support after the modernization
 
-Both forms are supported; the explicit accessor is preferred for new
-code because it's self-documenting:
+Your `language_config.json` is migrated on first start. A language you never
+toggled stays enabled, `web` becomes `typescript` + `web`, and `flutter` is
+dropped. Enable new packs with `:LangEnable swift solidity` (or
+`<leader>Lp`), then let the first file install the tools, or run
+`:LangInstall`.
+
+### Opting out of the new defaults
+
+Create `lua/user/settings.lua`:
 
 ```lua
--- Preferred
-require("core.theme").get_themes().dark
-require("core.theme").get_theme_info()["kanagawa"]
-
--- Still works (backward compatible)
-require("core.theme").themes.dark
+return {
+  lsp = { auto_start = false },
+  format = { on_save = false },
+  lint = { enabled = false },
+  install = { auto = false },
+}
 ```
 
-### Restoring pre-hardening behavior
-
-If you're on a trusted personal machine and want the old convenience
-defaults (automatic session restore, automatic cleanup, automatic LSP
-startup, format-on-save, lint-on-write, AI), set the corresponding
-`vim.g.enable_*` flags in your local init — see the Security Model
-section of README.md for the full list.
+The `vim.g.enable_*` flags no longer exist.

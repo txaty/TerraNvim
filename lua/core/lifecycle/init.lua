@@ -225,7 +225,12 @@ local steps = {
     name = "session restore",
     mode = "sync",
     fn = function(ctx)
-      if require("core.session_toggle").is_enabled() then
+      -- :restart (Neovim 0.12) saves and restores its own session; restoring
+      -- the persistence.nvim one on top would replace it.
+      if vim.v.startreason == "restart" then
+        log "session restore skipped (:restart restores its own session)"
+        ctx.session_restored = false
+      elseif require("core.session_toggle").is_enabled() then
         ctx.session_restored = require("core.lifecycle.session").restore()
       else
         log "session restore skipped (disabled by default)"

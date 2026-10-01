@@ -12,4 +12,5 @@ return require("core.persist_flag").new {
   default = require("core.settings").get "ai.enabled",
   label = "AI features",
   hint = "Restart Neovim to apply changes.",
+  restart = true,
 }

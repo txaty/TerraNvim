@@ -19,6 +19,7 @@ local M = {}
 ---@field label string     Subject of the notification, e.g. "AI features"
 ---@field hint string      Trailing sentence, e.g. "Restart Neovim to apply changes."
 ---@field on_set? fun(enabled: boolean)  Called after a successful write
+---@field restart? boolean  Offer :restart after a change (core.restart)
 
 ---Create a persisted boolean flag module.
 ---@param opts PersistFlagOpts
@@ -55,6 +56,9 @@ function M.new(opts)
       ),
       vim.log.levels.INFO
     )
+    if opts.restart then
+      require("core.restart").offer(opts.label)
+    end
   end
 
   function flag.enable()

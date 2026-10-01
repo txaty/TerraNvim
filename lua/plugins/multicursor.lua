@@ -37,23 +37,23 @@ return {
         end,
         desc = "Multi-Cursor: add all matches",
       },
-      {
-        "<Esc>",
-        function()
-          local mc = require "multicursor-nvim"
-          if not mc.cursorsEnabled() then
-            mc.enableCursors()
-          elseif mc.hasCursors() then
-            mc.clearCursors()
-          else
-            vim.cmd "noh"
-          end
-        end,
-        desc = "Multi-Cursor: clear or noh",
-      },
     },
     config = function()
-      require("multicursor-nvim").setup()
+      local mc = require "multicursor-nvim"
+      mc.setup()
+      -- These keys only exist while extra cursors are active, so <Esc> keeps
+      -- its plain meaning (and :nohlsearch from core/keymaps.lua) otherwise.
+      mc.addKeymapLayer(function(layer_set)
+        layer_set({ "n", "x" }, "<left>", mc.prevCursor)
+        layer_set({ "n", "x" }, "<right>", mc.nextCursor)
+        layer_set("n", "<esc>", function()
+          if not mc.cursorsEnabled() then
+            mc.enableCursors()
+          else
+            mc.clearCursors()
+          end
+        end)
+      end)
     end,
   },
 }

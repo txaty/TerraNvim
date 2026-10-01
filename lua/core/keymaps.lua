@@ -22,8 +22,7 @@ map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 --------------------------------------
 -- Windows and buffers
 --------------------------------------
--- Note: <Esc> → :noh is owned by multicursor.lua (it falls through to noh when
--- no extra cursors are active), so it is deliberately not mapped here.
+map("n", "<Esc>", "<cmd>nohlsearch<cr><Esc>", { desc = "Clear search highlight" })
 map("n", "<C-h>", "<C-w>h", { desc = "Switch Window left" })
 map("n", "<C-l>", "<C-w>l", { desc = "Switch Window right" })
 map("n", "<C-j>", "<C-w>j", { desc = "Switch Window down" })

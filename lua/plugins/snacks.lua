@@ -296,10 +296,8 @@ return {
       -- `nvim <dir>`; trash moves deleted files to the system trash.
       explorer = { enabled = true, replace_netrw = true, trash = true },
 
-      -- KEEP DISABLED (using other plugins)
-      lazygit = { enabled = false }, -- Keep lazygit.nvim
-      input = { enabled = true },
-      statuscolumn = { enabled = false },
+      input = { enabled = true }, -- vim.ui.input
+      statuscolumn = { enabled = false }, -- Neovim's default statuscolumn is used
     },
     keys = {
       -- File explorer

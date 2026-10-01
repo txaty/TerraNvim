@@ -98,6 +98,11 @@ map("n", "<leader>ur", ui_toggle "relativenumber", { desc = "UI: Toggle relative
 map("n", "<leader>uc", ui_toggle "conceallevel", { desc = "UI: Toggle conceal" })
 map("n", "<leader>ud", ui_toggle "dim", { desc = "UI: Toggle dim" })
 map("n", "<leader>uD", ui_toggle "diagnostic_lines", { desc = "UI: Toggle inline diagnostics" })
+map("n", "<leader>uu", function()
+  -- Neovim 0.12's built-in undo tree, an optional package loaded on first use.
+  vim.cmd.packadd "nvim.undotree"
+  vim.cmd.Undotree()
+end, { desc = "UI: Undo tree" })
 
 --------------------------------------
 -- Colorscheme (core.ui.theme_picker)

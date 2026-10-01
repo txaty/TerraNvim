@@ -12,8 +12,14 @@ return {
   -- vimtex provides syntax highlighting (and needs it for its motions and
   -- text objects); treesitter highlighting would replace it.
   ts_highlight = { tex = false, plaintex = false },
+  parsers = { "bibtex" },
   servers = {
-    texlab = { mason = "texlab" },
+    -- Same build directory as vimtex's latexmk (aux_dir/out_dir below), so
+    -- texlab finds the log for its build diagnostics.
+    texlab = {
+      mason = "texlab",
+      settings = { texlab = { build = { auxDirectory = "build", logDirectory = "build", pdfDirectory = "build" } } },
+    },
   },
   tools = function(o)
     return { o.formatter }

@@ -92,6 +92,11 @@ redirects the old URL). Language support is data-driven, defaults are
 - DAP configurations were missing for buffers opened before nvim-dap loaded.
 - Disabling a language dropped its plugins from `lazy-lock.json`; they are
   now kept with `cond = false`.
+- Rust: proc macros never expanded (`procMacro.server = "prefer"` is a
+  path, not a mode) and check-on-save never ran (duplicate `--all-targets`
+  / `--all-features` rejected by cargo). rust-analyzer now comes from the
+  toolchain (`rustup component add rust-analyzer`), so its proc-macro
+  server matches rustc.
 - overseer commands broken by its v2 API; refactoring.nvim maps that never
   ran a refactor (missing `expr`); theme switching discarded colorscheme
   options and saved the wrong variant; flash changed `f`/`t` after the first

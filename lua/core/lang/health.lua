@@ -49,7 +49,7 @@ function M.check()
   else
     health.info(
       ("Project %s is not trusted: tools that run project code are skipped "):format(root)
-        .. "(eslint, tailwindcss, prettier, luacheck, markdownlint-cli2, solhint, workspace TypeScript); "
+        .. "(eslint, tailwindcss, Hardhat/solidity, prettier, luacheck, markdownlint-cli2, solhint, workspace TypeScript); "
         .. ":TrustProject allows them"
     )
   end

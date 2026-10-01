@@ -77,7 +77,6 @@ return {
           left_pad = 0,
           right_pad = 0,
           min_width = 0,
-          deterministic = true,
         },
         code = {
           enabled = true,

@@ -7,7 +7,9 @@ return {
   grep_type = "solidity",
   parsers = { "solidity" },
   servers = {
-    solidity_ls_nomicfoundation = { mason = "nomicfoundation-solidity-language-server" },
+    -- Resolves Hardhat projects by loading hardhat.config.{js,ts}, i.e. project
+    -- code (a common lure in malicious Web3 repositories): trusted projects only.
+    solidity_ls_nomicfoundation = { mason = "nomicfoundation-solidity-language-server", trust = true },
   },
   tools = { "solhint" },
   formatters_by_ft = {

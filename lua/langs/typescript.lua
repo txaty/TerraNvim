@@ -75,7 +75,6 @@ return {
         mason = "eslint-lsp",
         cmd = { "vscode-eslint-language-server", "--stdio" },
         trust = true,
-        settings = { workingDirectories = { mode = "auto" } },
       },
       biome = { mason = "biome", cmd = { "biome", "lsp-proxy" } },
     }

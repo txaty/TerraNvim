@@ -19,12 +19,13 @@ end
 
 return {
   title = "Rust",
-  description = "rustaceanvim (rust-analyzer, clippy), crates.nvim, codelldb, neotest",
+  description = "rustaceanvim (toolchain rust-analyzer, clippy), crates.nvim, codelldb, neotest",
   filetypes = { "rust" },
   grep_type = "rust",
   parsers = { "rust" },
   servers = {
-    rust_analyzer = { mason = "rust-analyzer", managed_by = "rustaceanvim" },
+    -- From the toolchain: `rustup component add rust-analyzer`.
+    rust_analyzer = { mason = false, managed_by = "rustaceanvim" },
   },
   tools = { "codelldb" },
   formatters_by_ft = { rust = { "rustfmt" } },
@@ -61,6 +62,15 @@ return {
         vim.g.rustaceanvim = {
           -- LSP configuration
           server = {
+            -- The toolchain's rust-analyzer (rustup component), not Mason's: its
+            -- proc-macro server must match the rustc version, and a Mason copy
+            -- that lags the toolchain breaks proc macros. Resolved at client
+            -- start; falls back to PATH.
+            cmd = function()
+              local out = vim.system({ "rustup", "which", "rust-analyzer" }, { text = true }):wait()
+              local path = out.code == 0 and vim.trim(out.stdout or "") or ""
+              return { path ~= "" and path or "rust-analyzer" }
+            end,
             default_settings = {
               ["rust-analyzer"] = {
                 -- Workspace and discovery
@@ -81,10 +91,9 @@ return {
                 },
 
                 -- Proc macro support
-                procMacro = {
-                  enable = true, -- Enable procedural macro expansion
-                  server = "prefer", -- Prefer server-side macro expansion
-                },
+                -- (procMacro.server is a path, not a mode: "prefer" made
+                -- rust-analyzer spawn <workspace>/prefer, so no macro expanded.)
+                procMacro = { enable = true },
 
                 -- Diagnostics
                 diagnostics = {
@@ -95,13 +104,12 @@ return {
                 },
 
                 -- Check on save: the flag is a boolean; the command it runs lives
-                -- under `check.*`. Passing a table to checkOnSave makes
-                -- rust-analyzer reject the whole block, so clippy never ran.
+                -- under `check.*`. No extraArgs: rust-analyzer already passes
+                -- --all-targets (check.allTargets) and --all-features (from
+                -- cargo.features), and cargo rejects the duplicates, so check
+                -- on save never ran.
                 checkOnSave = true,
-                check = {
-                  command = "clippy",
-                  extraArgs = { "--all-targets", "--all-features" },
-                },
+                check = { command = "clippy" },
 
                 -- Hover actions
                 hover = {

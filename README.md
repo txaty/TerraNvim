@@ -188,7 +188,8 @@ In untrusted projects:
 - Tools whose project configuration is code don't run:
   - luacheck (`.luacheckrc` is Lua);
   - prettier (JS configs and plugins);
-  - the eslint and tailwindcss servers (they load project JS);
+  - the eslint, tailwindcss and Solidity (Hardhat) servers (they load project
+    JS);
   - markdownlint-cli2 (`.cjs` configs);
   - solhint (plugins);
   - the workspace TypeScript SDK.
@@ -196,8 +197,8 @@ In untrusted projects:
   A notice names what was skipped. LSP formatting is used instead where it
   exists.
 - Toolchains that build the project are not gated: rust-analyzer runs build
-  scripts and proc macros, SwiftPM evaluates `Package.swift`, and go may
-  fetch toolchains. Enabling those language packs means accepting that, as in
+  scripts and proc macros, SwiftPM evaluates `Package.swift`, kotlin-lsp
+  imports Gradle/Maven builds, and go may fetch toolchains. Enabling those language packs means accepting that, as in
   any editor.
 
 Hardened defaults:

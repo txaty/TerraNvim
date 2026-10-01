@@ -50,12 +50,12 @@ about individual languages.
 | `cpp` | clangd, neocmakelsp | clang-format | codelldb: launch, attach, **remote GDB server** (OpenOCD / J-Link / QEMU); option `query_driver` for cross compilers |
 | `go` | gopls (gofumpt, staticcheck) | goimports + gofumpt · golangci-lint | delve · neotest-golang (gotestsum) |
 | `python` | basedpyright (option: pyright) + ruff | ruff | debugpy · neotest-python · venv-selector |
-| `rust` | rust-analyzer via rustaceanvim | rustfmt · clippy | codelldb · rustaceanvim neotest · crates.nvim |
-| `typescript` | vtsls (option: TypeScript 7 `tsc`), eslint, biome | biome with `biome.json`, else prettier | js-debug-adapter · vitest / jest |
-| `web` | html, cssls, tailwindcss, emmet | prettier | auto-close tags |
+| `rust` | rust-analyzer from the toolchain (`rustup component add rust-analyzer`) via rustaceanvim | rustfmt · clippy | codelldb · rustaceanvim neotest · crates.nvim |
+| `typescript` | vtsls (option: TypeScript 7 `tsc`), eslint (trusted projects), biome | biome with `biome.json`, else prettier | js-debug-adapter · vitest / jest |
+| `web` | html, cssls, tailwindcss (Tailwind projects, trusted), emmet | prettier | auto-close tags |
 | `swift` | sourcekit-lsp (Xcode, not Mason) | swiftformat with `.swiftformat`, else `swift format` · swiftlint | lldb-dap · xcodebuild.nvim (macOS) |
 | `kotlin` | kotlin-lsp (JetBrains) | ktlint (option: ktfmt) | |
-| `solidity` | Nomic Foundation solidity LS | `forge fmt` in Foundry projects · solhint (with config) | |
+| `solidity` | Nomic Foundation solidity LS (trusted projects) | `forge fmt` in Foundry projects · solhint (with config) | |
 | `latex` | texlab | tex-fmt (option: latexindent) | vimtex (Skim / zathura / Sumatra) |
 | `typst` | tinymist | typstyle (via tinymist) | typst-preview |
 

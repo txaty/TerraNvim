@@ -39,22 +39,25 @@ local function runnable(cfg, spec)
   return true
 end
 
----Servers marked `trust = true` load project code (eslint, tailwindcss): only
----give them a root, and so a client, in trusted projects (core.trust). The
----project is checked before nvim-lspconfig's own root_dir runs, since root_dir
----functions may execute project files too.
+---Servers marked `trust = true` load project code (eslint, tailwindcss,
+---Hardhat): only give them a root, and so a client, in trusted projects
+---(core.trust). The root is found first, so a project that does not use the
+---tool produces no "skipped" notice; their root_dir functions only read files
+---(the pack overrides any that would run something).
 ---@param name string
 ---@param base vim.lsp.Config lspconfig + pack config
 ---@return fun(bufnr: integer, on_dir: fun(root?: string))
 local function trusted_root(name, base)
   return function(bufnr, on_dir)
-    if not require("core.trust").allows(name, bufnr) then
-      return
+    local function found(root)
+      if root and require("core.trust").allows(name, root) then
+        on_dir(root)
+      end
     end
     if type(base.root_dir) == "function" then
-      return base.root_dir(bufnr, on_dir)
+      return base.root_dir(bufnr, found)
     end
-    on_dir(vim.fs.root(bufnr, base.root_markers or { ".git" }))
+    found(vim.fs.root(bufnr, base.root_markers or { ".git" }))
   end
 end
 

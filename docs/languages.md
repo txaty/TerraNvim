@@ -12,7 +12,7 @@ about individual languages.
 
 | Command / key | What it does |
 |---|---|
-| `<leader>Lp`, `:LangPanel` | Panel: `<CR>` toggle, `<C-i>` install, `<C-o>` options, `<C-r>` restart |
+| `<leader>Lp`, `:LangPanel` | Panel: `<CR>` toggle, `<C-x>` install, `<C-o>` options, `<C-r>` restart |
 | `:LangEnable {pack...}` / `:LangDisable` / `:LangToggle` | Change and persist the enabled set |
 | `:LangStatus [pack]`, `<leader>Ls` | What is enabled and what still needs installing |
 | `:LangInstall[!] [pack...]` | Install Mason tools and parsers (`!` waits; for scripts) |

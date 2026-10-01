@@ -54,11 +54,16 @@ local function choose_option(name)
     if not key then
       return
     end
-    vim.ui.select(options[key].choices or {}, { prompt = name .. "." .. key }, function(value)
+    local function set(value)
       if value ~= nil then
-        vim.cmd.LangOption { args = { name, key, tostring(value) } }
+        vim.cmd.LangOption { args = { name, key, value == "" and '""' or tostring(value) } }
       end
-    end)
+    end
+    if options[key].choices then
+      vim.ui.select(options[key].choices, { prompt = name .. "." .. key }, set)
+    else
+      vim.ui.input({ prompt = name .. "." .. key .. ": ", default = tostring(lang().opts(name)[key] or "") }, set)
+    end
   end)
 end
 
@@ -89,7 +94,7 @@ function M.open()
   end
 
   Snacks.picker.pick {
-    title = "Language packs  <CR> toggle · <C-i> install · <C-o> options · <C-r> restart",
+    title = "Language packs  <CR> toggle · <C-x> install · <C-o> options · <C-r> restart",
     finder = function()
       return items()
     end,
@@ -105,7 +110,7 @@ function M.open()
     confirm = act(toggle),
     actions = {
       lang_install = act(function(name)
-        require("core.lang.install").ensure { name }
+        require("core.lang.install").ensure({ name }, { force = true })
       end),
       lang_options = function(picker, item)
         if item then
@@ -120,7 +125,8 @@ function M.open()
     win = {
       input = {
         keys = {
-          ["<C-i>"] = { "lang_install", mode = { "i", "n" } },
+          -- Not <C-i>: terminals without CSI-u send it as <Tab>.
+          ["<C-x>"] = { "lang_install", mode = { "i", "n" } },
           ["<C-o>"] = { "lang_options", mode = { "i", "n" } },
           ["<C-r>"] = { "lang_restart", mode = { "i", "n" } },
         },

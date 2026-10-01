@@ -29,7 +29,8 @@ local function load_all()
   packs, names, errors = {}, {}, {}
   for _, dir in ipairs(SOURCES) do
     for file, kind in vim.fs.dir(dir) do
-      local id = kind == "file" and file:match "^(.+)%.lua$"
+      -- Symlinks too: dotfile managers often link individual files.
+      local id = (kind == "file" or kind == "link") and file:match "^(.+)%.lua$"
       if id then
         -- loadfile() on the known path instead of require(): it skips the
         -- runtimepath search (~0.1 ms per pack at startup) and still uses the
@@ -273,6 +274,25 @@ function M.collect.dap(list)
   return out
 end
 
+local dap_applied = {} ---@type table<string, true>
+
+---Run the `dap` function of the given (default: enabled) packs that have not
+---run yet this session. Some setups append (dap-python adds configurations on
+---every call), so re-enabling a pack must not run them twice.
+---@param dap table require("dap")
+---@param list? string[]
+function M.apply_dap(dap, list)
+  for _, entry in ipairs(M.collect.dap(list)) do
+    if not dap_applied[entry.pack] then
+      dap_applied[entry.pack] = true
+      local ok, err = pcall(entry.fn, dap, M.opts(entry.pack))
+      if not ok then
+        vim.notify(("DAP setup for %s failed: %s"):format(entry.pack, err), vim.log.levels.WARN)
+      end
+    end
+  end
+end
+
 ---@param list? string[]
 ---@return {pack: string, adapter: fun(opts: table): table?}[]
 function M.collect.tests(list)
@@ -382,26 +402,55 @@ function M.setup()
     end
   end
 
+  if next(errors) then
+    vim.schedule(function()
+      local lines = { "Language packs failed to load (see :checkhealth core.lang):" }
+      for name, err in pairs(errors) do
+        lines[#lines + 1] = ("  %s: %s"):format(name, err)
+      end
+      vim.notify(table.concat(lines, "\n"), vim.log.levels.ERROR)
+    end)
+  end
+
   require("core.lang.runtime").setup()
   -- Registered now rather than with the other commands after VimEnter so that
   -- `nvim --headless "+LangInstall!" +qa` works (-c runs before VimEnter).
   require("core.commands.lang").register()
 end
 
+---@return boolean overridden
+local function refuse_if_overridden()
+  if state.overridden() then
+    vim.notify("$NVIM_LANGS fixes the language packs for this session; unset it to change them", vim.log.levels.WARN)
+    return true
+  end
+  return false
+end
+
 ---Enable a pack now and persist it.
 ---@param name string
+---@return boolean changed
 function M.enable(name)
+  if refuse_if_overridden() then
+    return false
+  end
   state.set(name, true)
   M.invalidate()
   require("core.lang.runtime").activate(name)
+  return true
 end
 
 ---Disable a pack now and persist it.
 ---@param name string
+---@return boolean changed
 function M.disable(name)
+  if refuse_if_overridden() then
+    return false
+  end
   require("core.lang.runtime").deactivate(name)
   state.set(name, false)
   M.invalidate()
+  return true
 end
 
 return M

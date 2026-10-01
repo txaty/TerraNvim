@@ -7,12 +7,14 @@ end
 local M = {}
 
 function M.setup()
-  -- Prose-friendly settings for text files
-  -- NOTE: Prose filetypes always force wrap=true, regardless of global UI setting
+  -- Prose-friendly settings for text files. vim.b.prose_wrap tells
+  -- core.ui_toggle.apply() (BufWinEnter, which runs after FileType) to keep
+  -- wrap on here regardless of the global wrap toggle.
   autocmd("FileType", {
     group = augroup "prose_settings",
     pattern = { "markdown", "text", "tex", "typst" },
-    callback = function()
+    callback = function(args)
+      vim.b[args.buf].prose_wrap = true
       vim.opt_local.wrap = true
       vim.opt_local.linebreak = true
       vim.opt_local.breakindent = true

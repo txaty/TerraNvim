@@ -72,13 +72,28 @@ end
 --- writing a window option is only done when the value really differs.
 ---@param win? number Window handle (0 for current window)
 function M.apply(win)
-  win = win or 0
+  win = (win == nil or win == 0) and vim.api.nvim_get_current_win() or win
   if not initialized then
     M.init()
   end
 
+  -- Only ordinary file windows follow the UI toggles: floats (pickers, hover,
+  -- notifications) and special buffers (terminals, help, quickfix, plugin UIs)
+  -- set their own window options and must not get numbers/wrap/spell forced on.
+  if vim.api.nvim_win_get_config(win).relative ~= "" then
+    return
+  end
+  local buf = vim.api.nvim_win_get_buf(win)
+  if vim.bo[buf].buftype ~= "" then
+    return
+  end
+
   for _, opt in ipairs(WINDOW_OPTIONS) do
     local want = vim.g["ui_" .. opt]
+    -- Prose buffers (markdown, tex, ...) always wrap; see vim.b.prose_wrap.
+    if opt == "wrap" and vim.b[buf].prose_wrap then
+      want = true
+    end
     if want ~= nil and vim.wo[win][opt] ~= want then
       vim.wo[win][opt] = want
     end

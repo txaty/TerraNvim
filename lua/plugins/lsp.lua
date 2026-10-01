@@ -102,60 +102,31 @@ return {
       -- a client name check (e.g., rustaceanvim uses <leader>R* prefix). If a
       -- per-buffer override mechanism is needed in the future, check for
       -- vim.b.lsp_keymaps_override before setting each keymap.
+      -- Buffer-local LSP keymaps. Neovim 0.11/0.12 already map, globally:
+      --   K hover, grn rename, gra code action, grr references, gri implementation,
+      --   grt type definition, grx run codelens, gO document symbols,
+      --   [d ]d diagnostics, <C-s> (insert) signature help, an/in selection range.
+      -- Those are deliberately NOT remapped (a buffer-local `gr` would make every
+      -- gr* default wait for 'timeoutlen'); only additions live here.
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("NvimConfig_LspKeymaps", { clear = true }),
         callback = function(ev)
-          -- Enable completion triggered by <c-x><c-o>
-          vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-
-          -- Buffer specific mappings
-          map("n", "gD", vim.lsp.buf.declaration, { buffer = ev.buf, desc = "LSP: Go to declaration" })
-          map("n", "gd", vim.lsp.buf.definition, { buffer = ev.buf, desc = "LSP: Go to definition" })
-          map("n", "K", vim.lsp.buf.hover, { buffer = ev.buf, desc = "LSP: Hover documentation" })
-          map("n", "gi", vim.lsp.buf.implementation, { buffer = ev.buf, desc = "LSP: Go to implementation" })
-          map("n", "<leader>ls", vim.lsp.buf.signature_help, { buffer = ev.buf, desc = "LSP: Signature help" })
-
-          -- Workspace folders live under <leader>lw*, not <leader>w*.
-          -- <leader>w is registered with which-key as the "Windows" group
-          -- (splits, zoom, equalise); three LSP entries hiding in there were
-          -- undiscoverable and mislabelled.
-          map(
-            "n",
-            "<leader>lwa",
-            vim.lsp.buf.add_workspace_folder,
-            { buffer = ev.buf, desc = "LSP: Add workspace folder" }
-          )
-          map(
-            "n",
-            "<leader>lwr",
-            vim.lsp.buf.remove_workspace_folder,
-            { buffer = ev.buf, desc = "LSP: Remove workspace folder" }
-          )
-          map("n", "<leader>lwl", function()
+          local function bmap(lhs, rhs, desc, mode)
+            map(mode or "n", lhs, rhs, { buffer = ev.buf, desc = desc })
+          end
+          bmap("gd", vim.lsp.buf.definition, "LSP: Go to definition")
+          bmap("gD", vim.lsp.buf.declaration, "LSP: Go to declaration")
+          bmap("<leader>la", vim.lsp.buf.code_action, "LSP: Code action", { "n", "x" })
+          bmap("<leader>ls", vim.lsp.buf.signature_help, "LSP: Signature help")
+          bmap("<leader>ld", vim.diagnostic.open_float, "LSP: Line diagnostics")
+          bmap("<leader>D", vim.lsp.buf.type_definition, "LSP: Type definition")
+          -- <leader>lr is inc-rename (above); <leader>lf is conform (tools.lua).
+          -- Workspace folders live under <leader>lw*, not the <leader>w windows group.
+          bmap("<leader>lwa", vim.lsp.buf.add_workspace_folder, "LSP: Add workspace folder")
+          bmap("<leader>lwr", vim.lsp.buf.remove_workspace_folder, "LSP: Remove workspace folder")
+          bmap("<leader>lwl", function()
             vim.notify(vim.inspect(vim.lsp.buf.list_workspace_folders()), vim.log.levels.INFO)
-          end, { buffer = ev.buf, desc = "LSP: List workspace folders" })
-
-          map("n", "<leader>D", vim.lsp.buf.type_definition, { buffer = ev.buf, desc = "LSP: Type definition" })
-          -- <leader>lr is owned by inc-rename.nvim's `keys` spec above.
-          -- There used to be a `pcall(require, "inc_rename")` fallback here.
-          -- It never fired and was actively harmful: lazy.nvim hooks `require`,
-          -- so probing the module *loads the plugin* — defeating its own
-          -- lazy-loading on every single LspAttach, then reporting success so
-          -- the fallback was dead code either way. inc-rename is pinned in
-          -- lazy-lock.json and always present, so no fallback is needed.
-          map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
-          map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
-          -- <leader>lf is owned by conform.nvim (lua/plugins/tools.lua) so it also
-          -- works in buffers without an attached client.
-
-          -- Diagnostic navigation (vim.diagnostic.jump replaces deprecated goto_prev/goto_next)
-          map("n", "[d", function()
-            vim.diagnostic.jump { count = -1 }
-          end, { buffer = ev.buf, desc = "LSP: Previous diagnostic" })
-          map("n", "]d", function()
-            vim.diagnostic.jump { count = 1 }
-          end, { buffer = ev.buf, desc = "LSP: Next diagnostic" })
-          map("n", "<leader>ld", vim.diagnostic.open_float, { buffer = ev.buf, desc = "LSP: Show diagnostics" })
+          end, "LSP: List workspace folders")
         end,
       })
 
@@ -218,10 +189,11 @@ return {
     "DNLHC/glance.nvim",
     cmd = "Glance",
     keys = {
-      { "gp", "<cmd>Glance definitions<cr>", desc = "LSP: Peek definition" },
-      { "gP", "<cmd>Glance references<cr>", desc = "LSP: Peek references" },
-      { "gI", "<cmd>Glance implementations<cr>", desc = "LSP: Peek implementations" },
-      { "gY", "<cmd>Glance type_definitions<cr>", desc = "LSP: Peek type definitions" },
+      -- Under <leader>lp ("Peek") so native gp/gP/gI keep working.
+      { "<leader>lpd", "<cmd>Glance definitions<cr>", desc = "LSP: Peek definitions" },
+      { "<leader>lpr", "<cmd>Glance references<cr>", desc = "LSP: Peek references" },
+      { "<leader>lpi", "<cmd>Glance implementations<cr>", desc = "LSP: Peek implementations" },
+      { "<leader>lpt", "<cmd>Glance type_definitions<cr>", desc = "LSP: Peek type definitions" },
     },
     opts = {
       border = { enable = true },

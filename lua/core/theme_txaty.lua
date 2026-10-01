@@ -21,7 +21,12 @@ M.palette = palettes.dark
 -- Theme Application
 -- ============================================================================
 
-function M.apply(variant)
+---Apply a txaty variant. colors/txaty*.lua call this from :colorscheme (which
+---has already cleared highlights and fires ColorScheme itself); everything else
+---(core.theme) calls it directly, so it clears and fires ColorScheme here.
+---@param variant? "dark"|"light"
+---@param from_colorscheme? boolean
+function M.apply(variant, from_colorscheme)
   variant = variant or "dark"
   local p = palettes[variant]
 
@@ -31,17 +36,22 @@ function M.apply(variant)
     p = palettes.dark
   end
 
-  -- Set colorscheme metadata
+  if not from_colorscheme then
+    vim.cmd "highlight clear"
+    if vim.fn.exists "syntax_on" == 1 then
+      vim.cmd "syntax reset"
+    end
+  end
+
   vim.g.colors_name = variant == "light" and "txaty-light" or "txaty"
   vim.o.background = variant
   vim.o.termguicolors = true
 
-  -- Apply all highlights
   generate_highlights(p)
 
-  -- Enable syntax and notify plugins
-  vim.cmd "syntax on"
-  vim.api.nvim_exec_autocmds("ColorScheme", { pattern = vim.g.colors_name })
+  if not from_colorscheme then
+    vim.api.nvim_exec_autocmds("ColorScheme", { pattern = vim.g.colors_name, modeline = false })
+  end
 end
 
 -- ============================================================================

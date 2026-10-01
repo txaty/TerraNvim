@@ -8,11 +8,11 @@ STARTUP_FAIL_MS ?= 35
 check: lint test startup
 
 fmt:
-	stylua lua scripts
+	stylua lua scripts colors
 
 lint:
-	stylua --check lua scripts
-	luacheck lua scripts
+	stylua --check lua scripts colors
+	luacheck lua scripts colors
 
 # default = settings' default packs, all = every pack, none = no packs.
 test:

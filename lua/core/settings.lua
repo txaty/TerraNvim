@@ -51,6 +51,12 @@ M.defaults = {
     enabled = false, -- default for :AIToggle; AI plugins need accounts and network
   },
   editorconfig = true, -- honour .editorconfig (Neovim built-in, safe subset of options)
+  theme = {
+    -- Used when nothing is saved yet and by <leader>cd/<leader>cl before a
+    -- dark/light theme was picked. Names: :ThemeSwitch or lua/core/theme.lua.
+    dark = "catppuccin-mocha",
+    light = "catppuccin-latte",
+  },
 }
 
 local merged ---@type table?

@@ -21,22 +21,22 @@ function M.setup()
     end,
   })
 
-  -- Auto-save theme whenever it changes (skip during live preview)
+  -- Persist the theme whenever it changes, including a hand-typed
+  -- :colorscheme. core.theme.apply() saves explicitly (or deliberately not,
+  -- for previews and the startup restore), so skip events it triggers.
   autocmd("ColorScheme", {
     group = augroup "ThemeAutoSave",
-    callback = function()
+    callback = function(ev)
       local ok, theme = pcall(require, "core.theme")
-      if not ok then
+      if not ok or theme.is_applying() then
         return
       end
-      -- Don't persist during theme picker preview
-      if theme.is_previewing() then
-        return
-      end
-      local current = vim.g.colors_name
-      -- Only save if it's a theme we recognize
-      if current and theme.theme_info[current] then
-        theme.save_theme(current)
+      -- ev.match is the name given to :colorscheme (e.g. kanagawa-lotus),
+      -- which is more precise than the g:colors_name some themes set.
+      local name = theme.resolve(ev.match, vim.o.background)
+      if name then
+        theme.set_current(name)
+        theme.save(name)
       end
     end,
   })

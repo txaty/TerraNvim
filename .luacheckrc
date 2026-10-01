@@ -23,6 +23,7 @@ allow_defined_top = true
 include_files = {
   "lua/**/*.lua",
   "scripts/**/*.lua",
+  "colors/*.lua",
   ".stylua.toml",
 }
 

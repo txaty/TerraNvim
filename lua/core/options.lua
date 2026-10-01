@@ -7,7 +7,7 @@ local g = vim.g
 g.mapleader = " "
 g.maplocalleader = " "
 
--- Disable netrw for nvim-tree
+-- Disable netrw: snacks.explorer replaces it (explorer.replace_netrw)
 g.loaded_netrw = 1
 g.loaded_netrwPlugin = 1
 

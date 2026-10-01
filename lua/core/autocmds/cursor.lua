@@ -41,7 +41,7 @@ function M.setup()
   ---@return boolean
   local function is_view_candidate()
     local ft = vim.bo.filetype
-    return vim.fn.expand "%" ~= "" and vim.bo.buftype == "" and ft ~= "NvimTree" and ft ~= "help"
+    return vim.fn.expand "%" ~= "" and vim.bo.buftype == "" and ft ~= "help"
   end
 
   ---Does the current buffer have any folds worth persisting?

@@ -163,6 +163,7 @@ return {
         },
         sources = {
           files = { hidden = true, follow = true },
+          explorer = { hidden = true }, -- dotfiles visible, as nvim-tree showed them
           grep = { hidden = true },
         },
         win = {
@@ -198,14 +199,12 @@ return {
           local exclude_ft = {
             "help",
             "dashboard",
-            "neo-tree",
-            "NvimTree",
+            "snacks_picker_list",
             "Trouble",
             "trouble",
             "lazy",
             "mason",
             "notify",
-            "toggleterm",
             "snacks_dashboard",
           }
           return vim.g.snacks_indent ~= false
@@ -293,14 +292,39 @@ return {
         },
       },
 
+      -- File explorer (a picker in a sidebar). replace_netrw also opens it for
+      -- `nvim <dir>`; trash moves deleted files to the system trash.
+      explorer = { enabled = true, replace_netrw = true, trash = true },
+
       -- KEEP DISABLED (using other plugins)
-      explorer = { enabled = false }, -- Keep nvim-tree
       terminal = { enabled = false }, -- Keep toggleterm
       lazygit = { enabled = false }, -- Keep lazygit.nvim
       input = { enabled = true },
       statuscolumn = { enabled = false },
     },
     keys = {
+      -- File explorer
+      {
+        "<C-n>",
+        function()
+          Snacks.explorer()
+        end,
+        desc = "Explorer: Toggle",
+      },
+      {
+        "<leader>fe",
+        function()
+          Snacks.explorer()
+        end,
+        desc = "Files: Toggle explorer",
+      },
+      {
+        "<leader>fE",
+        function()
+          Snacks.explorer.reveal()
+        end,
+        desc = "Files: Reveal file in explorer",
+      },
       -- Snacks Picker (replaces Telescope)
       {
         "<leader>ff",

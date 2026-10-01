@@ -16,6 +16,19 @@ return {
     },
     config = function(_, opts)
       require("persistence").setup(opts)
+      -- The explorer sidebar is a picker; :mksession would save its windows as
+      -- empty splits. Close it before the session is written.
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "PersistenceSavePre",
+        group = vim.api.nvim_create_augroup("persistence_explorer", { clear = true }),
+        callback = function()
+          if package.loaded.snacks then
+            for _, picker in ipairs(Snacks.picker.get { source = "explorer" }) do
+              picker:close()
+            end
+          end
+        end,
+      })
     end,
     -- Note: Session auto-save and auto-restore are handled in core/autocmds.lua
     -- This ensures autocmds are registered before VimEnter fires

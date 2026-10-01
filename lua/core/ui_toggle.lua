@@ -12,7 +12,6 @@ local defaults = {
   number = true,
   relativenumber = true,
   conceallevel = 2,
-  tree_git = true, -- Show git status in nvim-tree by default
   dim = false, -- Snacks dim mode (session-persistent)
   diagnostic_lines = false, -- virtual_lines diagnostics (Zed-style)
 }
@@ -21,7 +20,7 @@ local defaults = {
 local config_path = vim.fn.stdpath "data" .. "/ui_config.json"
 
 -- The subset of `defaults` that maps 1:1 onto window-local vim options.
--- `tree_git`, `dim` and `diagnostic_lines` are excluded: they are not window
+-- `dim` and `diagnostic_lines` are excluded: they are not window
 -- options and are applied through their own code paths.
 local WINDOW_OPTIONS = { "wrap", "spell", "number", "relativenumber", "conceallevel" }
 
@@ -29,17 +28,6 @@ local WINDOW_OPTIONS = { "wrap", "spell", "number", "relativenumber", "concealle
 -- This avoids disk I/O at require-time for faster startup
 
 local initialized = false
-
----Is an nvim-tree window currently visible?
----@return boolean
-local function is_tree_open()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "NvimTree" then
-      return true
-    end
-  end
-  return false
-end
 
 --- Initialize UI state from JSON config, session globals, or defaults
 --- Precedence: JSON file > vim.g global (session) > default
@@ -101,7 +89,7 @@ function M.apply(win)
 end
 
 --- Toggle a UI option
----@param opt string Option name (wrap, spell, number, relativenumber, conceallevel, tree_git)
+---@param opt string Option name (wrap, spell, number, relativenumber, conceallevel, dim, diagnostic_lines)
 function M.toggle(opt)
   local global_key = "ui_" .. opt
   local current = vim.g[global_key]
@@ -159,24 +147,6 @@ function M.toggle(opt)
   local cached_config = persist.load_json(config_path, {})
   cached_config[opt] = new_value
   persist.save_json(config_path, cached_config)
-
-  -- Special handling for tree_git.
-  -- nvim-tree reads the git setting once, in setup(); there is no runtime API
-  -- to flip it. A tree.reload() refreshes the rendered entries so the change is
-  -- partially visible immediately, but the flag itself only takes full effect
-  -- on the next nvim-tree setup() — hence the wording of the notification.
-  if opt == "tree_git" then
-    local api_ok, api = pcall(require, "nvim-tree.api")
-    if api_ok and is_tree_open() then
-      vim.schedule(function()
-        pcall(api.tree.reload)
-      end)
-    end
-
-    local display = new_value and "on" or "off"
-    vim.notify(string.format("UI: tree git status = %s (restart Neovim to fully apply)", display), vim.log.levels.INFO)
-    return
-  end
 
   -- Apply to current window (for standard vim options)
   vim.wo[opt] = new_value

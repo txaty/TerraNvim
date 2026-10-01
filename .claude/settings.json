@@ -1,12 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(make:*)",
-      "Bash(stylua:*)",
-      "Bash(luacheck:*)",
+      "Bash(make check)",
+      "Bash(make lint)",
+      "Bash(make test)",
+      "Bash(make startup)",
+      "Bash(make fmt)",
       "Bash(scripts/smoke.sh:*)",
-      "Bash(scripts/startup.sh:*)",
-      "Bash(nvim --headless:*)"
+      "Bash(scripts/startup.sh)"
     ]
   },
   "hooks": {

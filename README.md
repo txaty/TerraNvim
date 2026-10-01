@@ -211,8 +211,9 @@ Hardened defaults:
   - on the first start (missing plugins);
   - on first use of an enabled language: missing Mason tools and parsers
     (`install.auto = false` turns this off);
-  - from language servers themselves, e.g. jsonls and yamlls fetching the
-    schema a file names (`"$schema": "<url>"`) or that SchemaStore maps it to;
+  - from language servers themselves, e.g. jsonls, yamlls and taplo fetching
+    the schema a file names (`"$schema": "<url>"`) or that a catalogue maps
+    it to;
   - once per blink.cmp version, to download its prebuilt fuzzy matcher;
   - when you run `:Lazy`, `:Mason` or `:LangInstall`;
   - from AI plugins, once you enable them.

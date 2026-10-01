@@ -19,6 +19,15 @@ if not vim.uv.fs_stat(lazypath) then
     }, true, {})
     return
   end
+  -- Check out the commit pinned in lazy-lock.json rather than whatever the
+  -- branch points to today (every other plugin is pinned the same way).
+  local ok, lock = pcall(function()
+    return vim.json.decode(table.concat(vim.fn.readfile(vim.fn.stdpath "config" .. "/lazy-lock.json"), "\n"))
+  end)
+  local commit = ok and type(lock) == "table" and lock["lazy.nvim"] and lock["lazy.nvim"].commit
+  if type(commit) == "string" and commit:match "^%x+$" then
+    vim.fn.system { "git", "-C", lazypath, "checkout", "--quiet", commit }
+  end
 end
 vim.opt.rtp:prepend(lazypath)
 

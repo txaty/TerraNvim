@@ -277,8 +277,16 @@ local steps = {
     mode = "sync",
     -- retrigger_buffer_events() is async; window options are applied once the
     -- restored buffers have gone through their FileType/BufRead handlers.
-    needs_session = true,
-    fn = function()
+    -- Without a session the windows still need the UI toggles: the
+    -- WinNew/BufWinEnter autocmd (core.autocmds.ui_state) only exists from
+    -- VeryLazy on, after the first window was created.
+    fn = function(ctx)
+      if not ctx.session_restored then
+        if ok_ui then
+          ui_toggle.apply_all()
+        end
+        return
+      end
       retrigger_buffer_events(function()
         log "buffer events complete"
         if ok_ui then

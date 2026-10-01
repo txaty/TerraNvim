@@ -2,18 +2,17 @@
 -- rendering, and an external-reader opener.
 local function open_external()
   local filepath = vim.fn.expand "%:p"
-  local argv
-  if vim.fn.has "mac" == 1 then
-    argv = vim.fn.executable "typora" == 1 and { "open", "-a", "Typora", filepath } or { "open", filepath }
-  elseif vim.fn.has "win32" == 1 then
-    argv = { "cmd", "/c", "start", "", filepath }
-  elseif vim.fn.has "unix" == 1 then
-    argv = vim.fn.executable "typora" == 1 and { "typora", filepath } or { "xdg-open", filepath }
+  if not require("core.security").confirm_external("Open markdown file in external reader?", filepath) then
+    return
   end
-  if not argv then
-    vim.notify("Could not determine command to open file", vim.log.levels.ERROR)
-  elseif require("core.security").confirm_external("Open markdown file in external reader?", filepath) then
-    vim.system(argv, { detach = true })
+  if vim.fn.has "mac" == 1 and vim.fn.isdirectory "/Applications/Typora.app" == 1 then
+    vim.system({ "open", "-a", "Typora", filepath }, { detach = true })
+  elseif vim.fn.executable "typora" == 1 then
+    vim.system({ "typora", filepath }, { detach = true })
+  else
+    -- Neovim's opener: open/xdg-open/explorer.exe with the path as one
+    -- argument (no cmd.exe re-parsing of & or | in file names).
+    vim.ui.open(filepath)
   end
 end
 

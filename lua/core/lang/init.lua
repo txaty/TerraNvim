@@ -253,11 +253,18 @@ end
 ---@param list? string[]
 ---@return table<string, boolean>
 function M.collect.ts_disabled(list)
+  local key = not list and "ts_disabled"
+  if key and cache[key] then
+    return cache[key]
+  end
   local out = {}
   for ft, enabled in pairs(collect_map(list, "ts_highlight")) do
     if enabled == false then
       out[ft] = true
     end
+  end
+  if key then
+    cache[key] = out
   end
   return out
 end

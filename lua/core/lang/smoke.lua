@@ -174,6 +174,40 @@ return function(T)
   end
   check("linters known to nvim-lint", #bad_linters == 0, table.concat(bad_linters, ", "))
 
+  -- Function-valued formatters_by_ft (per-project choice): resolve them for a
+  -- buffer of that filetype and check the names they return.
+  for ft, value in pairs(lang.collect.formatters_by_ft()) do
+    if type(value) == "function" then
+      local scratch = vim.api.nvim_create_buf(false, true)
+      vim.bo[scratch].filetype = ft
+      local ok, list = pcall(value, scratch)
+      vim.api.nvim_buf_delete(scratch, { force = true })
+      if not ok then
+        bad_formatters[#bad_formatters + 1] = ft .. " (function raised: " .. tostring(list) .. ")"
+      else
+        for _, formatter in ipairs(type(list) == "table" and list or {}) do
+          if not conform.get_formatter_config(formatter) then
+            bad_formatters[#bad_formatters + 1] = formatter .. " (from " .. ft .. ")"
+          end
+        end
+      end
+    end
+  end
+  check("formatter functions return known formatters", #bad_formatters == 0, table.concat(bad_formatters, ", "))
+
+  -- filetype_add of enabled packs: every listed file name is detected.
+  local undetected = {}
+  for _, name in ipairs(enabled) do
+    local additions = lang.get(name).filetype_add or {}
+    for filename, ft in pairs(additions.filename or {}) do
+      local detected = vim.filetype.match { filename = "/tmp/x/" .. filename }
+      if detected ~= ft then
+        undetected[#undetected + 1] = ("%s -> %s (got %s)"):format(filename, ft, tostring(detected))
+      end
+    end
+  end
+  check("pack filetype detection (filetype_add)", #undetected == 0, table.concat(undetected, ", "))
+
   -- Parsers: valid names; installed is a warning only (needs network).
   local parsers = require "nvim-treesitter.parsers"
   local bad_parsers = vim.tbl_filter(function(parser)

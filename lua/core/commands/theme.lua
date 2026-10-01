@@ -6,9 +6,15 @@ local function picker()
 end
 
 function M.register()
-  vim.api.nvim_create_user_command("ThemeSwitch", function()
-    picker().open()
-  end, { desc = "Open the theme picker" })
+  vim.api.nvim_create_user_command("ThemeSwitch", function(o)
+    picker().open(o.args ~= "" and o.args or nil)
+  end, {
+    nargs = "?",
+    complete = function()
+      return { "dark", "light" }
+    end,
+    desc = "Open the theme picker (optionally filtered: dark/light)",
+  })
 
   vim.api.nvim_create_user_command("ThemeDark", function()
     picker().dark()

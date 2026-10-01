@@ -1,39 +1,17 @@
--- Colorscheme restoration lifecycle module
--- Handles theme restoration at startup (before UI plugins render)
+-- Colorscheme restore at VimEnter, before UI plugins render.
 local M = {}
 
-local DEFAULT_THEME = "catppuccin"
-
---- Restore saved colorscheme or apply default
---- Called synchronously before session restore to ensure UI consistency
+---Apply the saved theme (or settings theme.dark). Nothing is written back:
+---core.theme.apply() marks itself as applying, so the ColorScheme autosave in
+---core/autocmds/persistence.lua ignores it.
+---@return boolean restored_saved_theme
 function M.restore()
   local ok, theme = pcall(require, "core.theme")
   if not ok then
-    -- Fallback if theme module fails to load
-    pcall(vim.cmd.colorscheme, DEFAULT_THEME)
+    pcall(vim.cmd.colorscheme, "habamax")
     return false
   end
-
-  -- Suppress the ColorScheme autocmd from re-saving during restore.
-  -- Without this, vim.cmd.colorscheme() fires the autocmd in autocmds.lua
-  -- which calls theme.save_theme() — writing the already-saved value back.
-  local prev_previewing = theme.is_previewing()
-  theme.start_preview()
-
-  local saved_theme = theme.load_saved_theme()
-  local success = false
-  if saved_theme then
-    success = pcall(theme.restore_theme) == true
-  end
-
-  if not success then
-    pcall(theme.apply, DEFAULT_THEME, { save = false, notify = false })
-  end
-
-  if not prev_previewing then
-    theme.end_preview()
-  end
-  return success
+  return theme.restore()
 end
 
 return M

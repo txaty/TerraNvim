@@ -1,4 +1,6 @@
--- Session and theme auto-persistence on exit / colorscheme change
+-- Theme persistence on colorscheme change. (Sessions are saved by
+-- persistence.nvim itself; core/lifecycle/init.lua loads it when session
+-- persistence is on.)
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = function(name)
   return vim.api.nvim_create_augroup(name, { clear = true })
@@ -7,20 +9,6 @@ end
 local M = {}
 
 function M.setup()
-  -- Session auto-save on exit
-  autocmd("VimLeavePre", {
-    group = augroup "SessionAutoSave",
-    callback = function()
-      if not require("core.session_toggle").is_enabled() then
-        return
-      end
-      local ok, session = pcall(require, "core.lifecycle.session")
-      if ok then
-        session.save()
-      end
-    end,
-  })
-
   -- Persist the theme whenever it changes, including a hand-typed
   -- :colorscheme. core.theme.apply() saves explicitly (or deliberately not,
   -- for previews and the startup restore), so skip events it triggers.
@@ -31,11 +19,17 @@ function M.setup()
       if not ok or theme.is_applying() then
         return
       end
-      -- ev.match is the name given to :colorscheme (e.g. kanagawa-lotus),
-      -- which is more precise than the g:colors_name some themes set.
-      local name = theme.resolve(ev.match, vim.o.background)
+      -- Most precise first: the name given to :colorscheme (ev.match) when it
+      -- is a registry theme of the current 'background' (kanagawa-dragon);
+      -- then g:colors_name, which some themes set to the full variant
+      -- (tokyonight-moon); then base names resolved by 'background'.
+      local bg = vim.o.background
+      local exact = theme.registry[ev.match]
+      local name = (exact and exact.variant == bg and ev.match)
+        or theme.resolve(vim.g.colors_name, bg)
+        or theme.resolve(ev.match, bg)
+      theme.set_current(name) -- nil for themes outside the registry
       if name then
-        theme.set_current(name)
         theme.save(name)
       end
     end,

@@ -105,9 +105,18 @@ end
 M.ready = false
 
 ---Called by nvim-lspconfig's config(). Runs once.
+---
+---Deferred one tick: nvim-lspconfig loads on BufReadPre, i.e. while a file is
+---being read. After VimEnter, vim.lsp.enable() runs FileType for every loaded
+---buffer, which marks the buffer being read as "filetype already set" so its
+---own detection (setf) is skipped and it ends up with no filetype at all
+---(seen on the first window of a restored session). On the next tick the read
+---has finished and enable() attaches to it like to every other buffer.
 function M.setup()
   M.ready = true
-  M.configure()
+  vim.schedule(function()
+    M.configure()
+  end)
 end
 
 ---Stop and disable the servers of the given packs.

@@ -32,6 +32,7 @@ return {
       "ClaudeCodeSelectModel",
       "ClaudeCodeAdd",
       "ClaudeCodeSend",
+      "ClaudeCodeSendText",
       "ClaudeCodeTreeAdd",
       "ClaudeCodeStatus",
       "ClaudeCodeStart",

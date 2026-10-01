@@ -1,37 +1,26 @@
 return {
   {
     "folke/persistence.nvim",
-    lazy = true, -- Loaded on demand by lifecycle (session.restore() at VimEnter)
+    -- Loaded at VimEnter by core/lifecycle/init.lua when session persistence
+    -- is on (restore + its own VimLeavePre autosave), otherwise by the keys.
+    lazy = true,
     -- scope.nvim must be loaded BEFORE persistence.load() fires PersistenceLoadPost,
     -- otherwise scope's handler (ScopeLoadState) is never registered at session restore.
     -- Declaring it as a dependency guarantees scope loads first regardless of its own
     -- VeryLazy trigger in ui.lua.
     dependencies = { "tiagovla/scope.nvim" },
-    opts = {
-      -- Session options: UI state is persisted via ui_config.json (source of truth)
-      -- Theme persistence is handled separately by theme.lua
-      -- NOTE: "globals" intentionally excluded to avoid conflicts with JSON configs
-      -- (vim.g.ui_* from session would override ui_config.json, causing inconsistencies)
-      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp" },
-    },
+    -- 'sessionoptions' is set in core/options.lua (persistence.nvim has no
+    -- option of its own for it).
+    opts = {},
     config = function(_, opts)
-      require("persistence").setup(opts)
-      -- The explorer sidebar is a picker; :mksession would save its windows as
-      -- empty splits. Close it before the session is written.
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "PersistenceSavePre",
-        group = vim.api.nvim_create_augroup("persistence_explorer", { clear = true }),
-        callback = function()
-          if package.loaded.snacks then
-            for _, picker in ipairs(Snacks.picker.get { source = "explorer" }) do
-              picker:close()
-            end
-          end
-        end,
-      })
+      local persistence = require "persistence"
+      persistence.setup(opts)
+      -- setup() starts the VimLeavePre autosave; manual use (<leader>qs) with
+      -- session persistence turned off must not start saving sessions.
+      if not require("core.session_toggle").is_enabled() then
+        persistence.stop()
+      end
     end,
-    -- Note: Session auto-save and auto-restore are handled in core/autocmds.lua
-    -- This ensures autocmds are registered before VimEnter fires
     keys = {
       {
         "<leader>qs",

@@ -130,6 +130,19 @@ M.aliases = {
   modus_operandi_tritanopia = "modus_operandi",
 }
 
+-- :colorscheme base names that some plugins also set as g:colors_name (they
+-- pick the variant from setup()/'background'). Used to persist a hand-typed
+-- `:colorscheme kanagawa` as the variant actually shown.
+M.base_names = {
+  tokyonight = { dark = "tokyonight-moon", light = "tokyonight-day" },
+  catppuccin = { dark = "catppuccin-mocha", light = "catppuccin-latte" },
+  kanagawa = { dark = "kanagawa-wave", light = "kanagawa-lotus" },
+  ["rose-pine"] = { dark = "rose-pine-main", light = "rose-pine-dawn" },
+  modus = { dark = "modus_vivendi", light = "modus_operandi" },
+  cyberdream = { dark = "cyberdream", light = "cyberdream-light" },
+  ["solarized-osaka"] = { dark = "solarized-osaka", light = "solarized-osaka-light" },
+}
+
 ---@param name? string
 ---@return string? registry key
 function M.canonical(name)
@@ -207,7 +220,7 @@ function M.current()
 end
 
 ---Record a theme applied outside M.apply() (a hand-typed :colorscheme).
----@param name string registry key
+---@param name? string registry key, nil for a theme outside the registry
 function M.set_current(name)
   current = name
 end
@@ -225,7 +238,14 @@ function M.resolve(colors_name, background)
       return name
     end
   end
-  return M.canonical(colors_name)
+  local base = M.base_names[colors_name]
+  if base then
+    return base[background] or base.dark
+  end
+  if M.registry[colors_name] then
+    return colors_name
+  end
+  return nil -- not a registry theme; old names are only mapped for saved state
 end
 
 ---Options from the lazy.nvim spec (lua/plugins/colorscheme.lua), so setup()
@@ -296,14 +316,26 @@ function M.apply(name, opts)
   return true
 end
 
----Apply the saved theme, falling back to settings theme.dark.
+---Apply the saved theme. A saved theme that is no longer included falls back
+---to settings theme.light when it was the last light theme, else theme.dark.
 ---@return boolean
 function M.restore()
+  local config = load_config()
   local saved = M.saved()
   if saved and M.apply(saved, { save = false, notify = false }) then
     return true
   end
-  return M.apply(require("core.settings").get "theme.dark", { save = false, notify = false })
+  local variant = (config.theme and config.theme == config.last_light) and "light" or "dark"
+  local fallback = require("core.settings").get("theme." .. variant)
+  if config.theme and not saved then
+    vim.schedule(function()
+      vim.notify(
+        ("Theme '%s' is no longer included; using %s (pick another with <leader>cc)."):format(config.theme, fallback),
+        vim.log.levels.INFO
+      )
+    end)
+  end
+  return M.apply(fallback, { save = false, notify = false })
 end
 
 ---Switch to the last-used theme of a variant (or the settings default).

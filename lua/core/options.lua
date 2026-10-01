@@ -135,6 +135,12 @@ opt.foldmethod = "manual"
 -- View options: only save folds (cursor restored by BufReadPost autocmd)
 opt.viewoptions = "folds"
 
+-- Sessions (persistence.nvim and :restart): no "blank" and no "terminal", so
+-- plugin windows without a file (explorer sidebar, pickers, AI and other
+-- terminals) are not saved as empty splits. No "globals": UI state lives in
+-- its own JSON files.
+opt.sessionoptions = { "buffers", "curdir", "folds", "help", "tabpages", "winsize", "skiprtp" }
+
 --------------------------------------
 -- UI Polish
 --------------------------------------

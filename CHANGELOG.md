@@ -47,10 +47,13 @@ redirects the old URL). Language support is data-driven, defaults are
 - Servers start because an enabled pack declares them, not because Mason
   has them installed. Non-Mason servers (sourcekit-lsp) work, and disabled
   packs stay quiet.
-- Explorer: nvim-tree → snacks.explorer. Terminal: toggleterm →
-  Snacks.terminal, which uses your `$SHELL`. lazygit.nvim → Snacks.lazygit.
-  diffview.nvim → diffview-plus.nvim (maintained fork). Telescope removed;
-  snacks picker everywhere.
+- Explorer: nvim-tree → snacks.explorer; it no longer opens automatically
+  next to files (`nvim <dir>` still opens it, and changes into `<dir>`).
+- Terminal: toggleterm → Snacks.terminal, which uses your `$SHELL`
+  (`<C-\>` or `<C-/>` toggles, `<C-/>` hides from inside, `<Esc><Esc>` for
+  Normal mode).
+- lazygit.nvim → Snacks.lazygit, diffview.nvim → diffview-plus.nvim
+  (maintained fork), telescope removed (snacks picker everywhere).
 - Python: basedpyright + ruff (format, imports, lint). TypeScript: vtsls or
   TypeScript 7 `tsc`, Biome or prettier per project, js-debug-adapter
   directly. Go: gofumpt, golangci-lint v2, neotest-golang. Rust:

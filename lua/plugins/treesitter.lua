@@ -64,8 +64,8 @@ return {
       local function map_move(lhs, fn, query)
         vim.keymap.set({ "n", "x", "o" }, lhs, function()
           -- ]c/[c are also Vim's "next/previous change" in diff mode; keep that
-          -- meaning there (same approach as LazyVim).
-          if vim.wo.diff and lhs:find "[cC]" then
+          -- meaning there (same approach as LazyVim). ]C/[C have no diff meaning.
+          if vim.wo.diff and lhs:find "c" then
             return vim.cmd("normal! " .. vim.v.count1 .. lhs)
           end
           move[fn](query, "textobjects")

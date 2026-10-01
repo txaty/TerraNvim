@@ -172,7 +172,16 @@ local function retrigger_buffer_events(on_complete)
     -- (which listens on FileType) attach to the restored buffers.
     for _, buf in ipairs(bufs) do
       local ft = vim.bo[buf].filetype
-      if ft and ft ~= "" then
+      if ft == "" then
+        -- Safety net: a plugin that fires FileType while a restored buffer is
+        -- being read can make filetype detection skip it.
+        ft = vim.filetype.match { buf = buf } or ""
+        if ft ~= "" then
+          vim.bo[buf].filetype = ft -- triggers FileType itself
+          ft = ""
+        end
+      end
+      if ft ~= "" then
         pcall(vim.api.nvim_exec_autocmds, "FileType", { buffer = buf, pattern = ft })
       end
     end
@@ -221,19 +230,35 @@ local steps = {
     end,
   },
   {
+    name = "directory argument",
+    mode = "sync",
+    -- `nvim <dir>` works in that directory: pickers, grep, lazygit and the
+    -- per-directory session are all keyed on the cwd.
+    fn = function()
+      require("core.lifecycle.session").enter_directory_argument()
+    end,
+  },
+  {
     name = "session restore",
     mode = "sync",
     fn = function(ctx)
-      -- :restart (Neovim 0.12) saves and restores its own session; restoring
-      -- the persistence.nvim one on top would replace it.
-      if vim.v.startreason == "restart" then
-        log "session restore skipped (:restart restores its own session)"
+      if not require("core.session_toggle").is_enabled() then
+        log "session restore skipped (session persistence is off)"
         ctx.session_restored = false
-      elseif require("core.session_toggle").is_enabled() then
-        ctx.session_restored = require("core.lifecycle.session").restore()
+        return
+      end
+      -- Load persistence.nvim whenever persistence is on, even when nothing is
+      -- restored (file arguments, :restart): its own VimLeavePre autosave
+      -- honours <leader>qd and its `need` guard, and fires PersistenceSavePre
+      -- (scope.nvim saves tab-scoped buffers there).
+      pcall(require, "persistence")
+      -- :restart (Neovim 0.12) restores its own session and :restart! asks for
+      -- none, so the persistence.nvim one must not be loaded on top.
+      if vim.v.startreason:match "^restart" then
+        log "session restore skipped (:restart)"
+        ctx.session_restored = false
       else
-        log "session restore skipped (disabled by default)"
-        ctx.session_restored = false
+        ctx.session_restored = require("core.lifecycle.session").restore()
       end
     end,
   },

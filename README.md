@@ -81,7 +81,7 @@ nvim --headless "+LangEnable go python rust typescript" "+LangInstall!" +qa
 
 | Command | |
 |---|---|
-| `<leader>Lp` / `:LangPanel` | Enable/disable, install, options, restart |
+| `<leader>Lp` / `:LangPanel` | Enable/disable, install, options |
 | `:LangEnable` / `:LangDisable` / `:LangToggle {pack...}` | Persisted per machine |
 | `:LangOption {pack} {option} {value}` | e.g. `typescript server tsc`, `python server pyright`, `cpp query_driver /opt/homebrew/bin/arm-none-eabi-*` |
 | `:LangInstall[!] [pack...]` | Install Mason tools and parsers now |
@@ -151,17 +151,29 @@ changed in the 2026-10 modernization.
 
 ### Themes
 
-37 themes from 12 maintained plugins, each with dark and light variants, plus
-the built-in low-saturation **txaty** pair. `<leader>cc` opens a picker with
+37 themes: 12 maintained plugins, each with dark and light variants, and the
+built-in low-saturation **txaty** pair. `<leader>cc` opens a picker with
 live preview; `<leader>cd` / `<leader>cl` switch to your last dark / light
 theme. The choice persists, including themes set with a plain `:colorscheme`.
 
 ### Remote editing
 
-distant.nvim was removed (unmaintained). Neovim 0.12 can attach to a remote
-instance directly: run `nvim --headless --listen 127.0.0.1:6666` on the host,
-forward the port (`ssh -L 6666:127.0.0.1:6666 host`), then `:connect
-127.0.0.1:6666` locally. Mounting with sshfs also works.
+distant.nvim was removed (unmaintained). Neovim 0.12 can attach your local UI
+to a Neovim running on another machine. Use Unix sockets in private
+directories: a TCP `--listen` port is unauthenticated and lets any local user
+on either machine run code as you.
+
+```sh
+# on the host
+mkdir -p -m 700 ~/.cache/nvim-remote
+nvim --headless --listen ~/.cache/nvim-remote/nvim.sock
+# locally: forward the socket, then attach with :connect
+mkdir -p -m 700 ~/.cache/nvim-remote
+ssh -N -L ~/.cache/nvim-remote/host.sock:/home/you/.cache/nvim-remote/nvim.sock host
+nvim "+connect $HOME/.cache/nvim-remote/host.sock"
+```
+
+Mounting with sshfs also works.
 
 ## Security model
 

@@ -91,6 +91,16 @@ end
 --- Toggle a UI option
 ---@param opt string Option name (wrap, spell, number, relativenumber, conceallevel, dim, diagnostic_lines)
 function M.toggle(opt)
+  -- Prose buffers (markdown, tex, ...) always wrap regardless of the global
+  -- toggle, so flipping the global value there would change every code window
+  -- instead. Toggle just this window and stop forcing wrap for the buffer.
+  if opt == "wrap" and vim.b.prose_wrap ~= nil then
+    vim.wo.wrap = not vim.wo.wrap
+    vim.b.prose_wrap = vim.wo.wrap or nil
+    vim.notify(("UI: wrap = %s (this buffer)"):format(vim.wo.wrap and "on" or "off"), vim.log.levels.INFO)
+    return
+  end
+
   local global_key = "ui_" .. opt
   local current = vim.g[global_key]
   local new_value

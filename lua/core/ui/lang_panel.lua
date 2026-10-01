@@ -94,7 +94,7 @@ function M.open()
   end
 
   Snacks.picker.pick {
-    title = "Language packs  <CR> toggle · <C-x> install · <C-o> options · <C-r> restart",
+    title = "Language packs  <CR> toggle · <C-x> install · <C-o> options",
     finder = function()
       return items()
     end,
@@ -118,9 +118,6 @@ function M.open()
           choose_option(item.name)
         end
       end,
-      lang_restart = function()
-        vim.cmd.restart()
-      end,
     },
     win = {
       input = {
@@ -128,7 +125,6 @@ function M.open()
           -- Not <C-i>: terminals without CSI-u send it as <Tab>.
           ["<C-x>"] = { "lang_install", mode = { "i", "n" } },
           ["<C-o>"] = { "lang_options", mode = { "i", "n" } },
-          ["<C-r>"] = { "lang_restart", mode = { "i", "n" } },
         },
       },
     },

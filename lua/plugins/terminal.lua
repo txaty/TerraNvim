@@ -13,30 +13,37 @@ local function interactive_shell()
   return vim.o.shell
 end
 
+-- Hide key inside the terminals opened here. Not <C-\>: in terminal mode it
+-- is the prefix of <C-\><C-n> (back to Normal mode). <C-/> is sent as <C-_>
+-- by many terminals, so map both. Passed per toggle() rather than through
+-- `opts.terminal.win.keys`, which would reach every Snacks terminal (lazygit,
+-- the Claude Code split, ...). Double <Esc> enters Normal mode (snacks default).
+local hide_keys = {
+  hide_slash = { "<C-/>", "hide", mode = "t", desc = "Hide terminal" },
+  hide_underscore = { "<C-_>", "hide", mode = "t", desc = "Hide terminal" },
+}
+
 ---@param count integer distinct terminal per layout
 ---@param win table snacks.win config
 local function toggle(count, win)
   return function()
-    Snacks.terminal.toggle(nil, { count = count, win = win })
+    Snacks.terminal.toggle(nil, { count = count, win = vim.tbl_extend("force", win, { keys = hide_keys }) })
   end
 end
+
+local float = { position = "float", border = "rounded" }
 
 return {
   {
     "folke/snacks.nvim",
     opts = {
-      terminal = {
-        shell = interactive_shell(),
-        win = {
-          -- Buffer-local to Snacks terminals: <C-\> hides the terminal, while
-          -- <C-\><C-n> keeps working in every other terminal.
-          keys = { hide_terminal = { "<C-\\>", "hide", mode = "t", desc = "Hide terminal" } },
-        },
-      },
+      terminal = { shell = interactive_shell() },
     },
     keys = {
-      { "<C-\\>", toggle(1, { position = "float", border = "rounded" }), desc = "Terminal: Toggle (float)" },
-      { "<leader>Tf", toggle(1, { position = "float", border = "rounded" }), desc = "Terminal: Float" },
+      { "<C-\\>", toggle(1, float), desc = "Terminal: Toggle (float)" },
+      { "<C-/>", toggle(1, float), desc = "Terminal: Toggle (float)" },
+      { "<C-_>", toggle(1, float), desc = "which_key_ignore" },
+      { "<leader>Tf", toggle(1, float), desc = "Terminal: Float" },
       { "<leader>Th", toggle(2, { position = "bottom", height = 15 }), desc = "Terminal: Horizontal" },
       { "<leader>Tv", toggle(3, { position = "right", width = 80 }), desc = "Terminal: Vertical" },
     },

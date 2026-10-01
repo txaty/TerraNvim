@@ -109,7 +109,7 @@ Always available:
 
 | Key | Action |
 |---|---|
-| `<leader>Lp` | Panel: `<CR>` toggle, `<C-x>` install tools, `<C-o>` options, `<C-r>` restart |
+| `<leader>Lp` | Panel: `<CR>` toggle, `<C-x>` install tools, `<C-o>` options |
 | `<leader>Ls` | Status of every pack |
 | `<leader>Li` | Install missing tools and parsers of enabled packs |
 | `<leader>Lh` | `:checkhealth core.lang` |
@@ -192,7 +192,7 @@ for the session (set defaults in `lua/user/settings.lua`).
 |---|---|
 | `<leader>bd` / `<leader>bD` | Delete / wipe buffer · `<leader>bo` others · `<leader>bx` all · `<leader>ba` select all |
 | `<leader>ws` / `<leader>wv` | Split / vertical split · `<leader>w=` equalize · `<leader>wo` only · `<leader>wz` zoom |
-| `<C-\>` | Toggle floating terminal (inside: hide) · `<leader>T{f,h,v}` float / bottom / right |
+| `<C-\>` / `<C-/>` | Toggle floating terminal · `<leader>T{f,h,v}` float / bottom / right; inside: `<C-/>` hide, `<Esc><Esc>` Normal mode |
 | `<leader>o{r,s,t,l,a}` | Tasks: run, shell command, panel, restart last, action |
 | `<leader>qs` / `<leader>ql` / `<leader>qS` | Restore session for cwd / last / select |
 | `<leader>qd` | Don't save the current session · `<leader>qp` toggle auto persistence |

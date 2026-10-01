@@ -7,5 +7,16 @@ return require("core.persist_flag").new {
   filename = "session_config.json",
   default = require("core.settings").get "session.persistence",
   label = "Session persistence",
-  hint = "Takes effect on next startup for auto-restore.",
+  hint = "Auto-restore applies from the next start.",
+  on_set = function(enabled)
+    -- Saving on exit follows the toggle right away.
+    if package.loaded.persistence then
+      local persistence = require "persistence"
+      if enabled then
+        persistence.start()
+      else
+        persistence.stop()
+      end
+    end
+  end,
 }

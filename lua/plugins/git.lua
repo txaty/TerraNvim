@@ -62,7 +62,7 @@ return {
         map("n", "<leader>gd", gs.diffthis, "Git: Diff this")
         map("n", "<leader>gD", function()
           gs.diffthis "~"
-        end, "Git: Diff against HEAD")
+        end, "Git: Diff against HEAD~")
         -- gitsigns marks toggle_deleted deprecated in favour of
         -- preview_hunk_inline (<leader>gp), but that previews one hunk while
         -- this toggles deleted lines buffer-wide. No supported equivalent, so

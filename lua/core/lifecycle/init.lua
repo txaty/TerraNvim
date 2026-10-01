@@ -282,18 +282,6 @@ local steps = {
     end,
   },
   {
-    name = "keymap audit",
-    mode = "sync",
-    -- Opt-in via vim.g.debug_keymaps for early detection before VeryLazy.
-    -- keymap_audit.setup() in core/init.lua also runs full_audit() on VeryLazy.
-    condition = function()
-      return vim.g.debug_keymaps
-    end,
-    fn = function()
-      require("core.keymap_audit").check()
-    end,
-  },
-  {
     name = "reconcile",
     mode = "very_lazy",
     -- Bufferline highlights the active tab by comparing nvim_get_current_buf()

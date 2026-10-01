@@ -6,7 +6,6 @@ local M = {}
 function M.setup()
   require("core.autocmds.filetype").setup()
   require("core.autocmds.cursor").setup()
-  require("core.autocmds.word_highlight").setup()
   require("core.autocmds.persistence").setup()
   require("core.autocmds.ui_state").setup()
   require("core.autocmds.images").setup()

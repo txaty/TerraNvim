@@ -5,7 +5,7 @@
 -- lazy-loaded. Mappings that drive a core.* module live here and require the
 -- module inside the callback, so the module is only loaded when the key is used.
 --
--- Conflicts across all sources are reported by core.keymap_audit on VeryLazy.
+-- Overlapping mappings are reported by :checkhealth which-key.
 local map = vim.keymap.set
 
 --------------------------------------

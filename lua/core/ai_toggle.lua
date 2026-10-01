@@ -1,7 +1,7 @@
 -- AI feature toggle.
 --
--- Gates copilot.lua, CopilotChat.nvim and avante.nvim through their `cond` in
--- lua/plugins/copilot.lua. `cond` is evaluated when lazy.nvim builds the plugin
+-- Gates claudecode.nvim and sidekick.nvim through their `cond` in
+-- lua/plugins/ai.lua. `cond` is evaluated when lazy.nvim builds the plugin
 -- list, so flipping this only takes effect on the next start — hence the
 -- "Restart Neovim" wording. Similar in spirit to Zed's "Disable AI".
 --

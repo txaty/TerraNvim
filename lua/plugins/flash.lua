@@ -30,6 +30,14 @@ return {
       },
     },
     keys = {
+      -- Load on f/F/t/T too. Flash's char mode replaces these motions when it
+      -- loads; with only s/S/r/R as triggers, f/t silently changed behaviour
+      -- after the first `s` of a session. (`;` stays `:` from core/keymaps.lua:
+      -- flash skips `;` when a normal-mode mapping for it exists.)
+      { "f", mode = { "n", "x", "o" } },
+      { "F", mode = { "n", "x", "o" } },
+      { "t", mode = { "n", "x", "o" } },
+      { "T", mode = { "n", "x", "o" } },
       {
         "s",
         mode = { "n", "x", "o" },

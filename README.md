@@ -209,9 +209,10 @@ Hardened defaults:
 - Network access:
   - on the first start (missing plugins);
   - on first use of an enabled language: missing Mason tools and parsers
-    (`install.auto = false` turns this off), plus whatever those tools fetch
-    themselves (e.g. yamlls downloading a JSON schema for the file you
-    opened);
+    (`install.auto = false` turns this off);
+  - from language servers themselves, e.g. jsonls and yamlls fetching the
+    schema a file names (`"$schema": "<url>"`) or that SchemaStore maps it to;
+  - once per blink.cmp version, to download its prebuilt fuzzy matcher;
   - when you run `:Lazy`, `:Mason` or `:LangInstall`;
   - from AI plugins, once you enable them.
 - Persisted state is written only under `stdpath("data"|"state"|"cache")`,
@@ -235,6 +236,7 @@ hooks, and grep the updated plugins for `os.execute`, `io.popen` and
 ## Development
 
 ```sh
+make deps    # new machine / CI: pinned plugins, then every pack's tools (network)
 make check   # lint (stylua + luacheck), headless smoke tests, startup budget
 make fmt     # format Lua
 make test    # smoke tests with default, all and no language packs

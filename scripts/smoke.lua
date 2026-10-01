@@ -66,8 +66,20 @@ for _, path in ipairs(watched) do
   before[path] = hash(path) or "<absent>"
 end
 
--- Record ERROR notifications. Plugins (noice/snacks) replace vim.notify later,
--- so the wrapper is re-applied after VeryLazy.
+---JSON state files present in the data dir now.
+local function data_json_files()
+  local files = {}
+  for name, kind in vim.fs.dir(data_dir) do
+    if kind == "file" and name:match "%.json$" then
+      files[#files + 1] = data_dir .. "/" .. name
+    end
+  end
+  return files
+end
+
+-- Record ERROR notifications made before noice takes over vim.notify (at
+-- VeryLazy). After that, noice's own history is read (noice_errors()):
+-- re-wrapping vim.notify would make noice report it as overwritten.
 local function wrap_notify()
   local inner = vim.notify
   vim.notify = function(msg, level, opts)
@@ -78,6 +90,22 @@ local function wrap_notify()
   end
 end
 wrap_notify()
+
+---ERROR notifications noice has recorded (it owns vim.notify after VeryLazy).
+---@return string[]
+local function noice_errors()
+  local manager = package.loaded["noice.message.manager"]
+  if not manager then
+    return {}
+  end
+  local errs = {}
+  for _, message in ipairs(manager.get({ event = "notify" }, { history = true })) do
+    if message.level == "error" then
+      errs[#errs + 1] = message:content()
+    end
+  end
+  return errs
+end
 
 ---Collect error-looking lines from :messages.
 local function message_errors()
@@ -106,7 +134,8 @@ local function check_startup()
   local msg_errs = message_errors()
   check("no errors in :messages", #msg_errs == 0, table.concat(msg_errs, " | "))
 
-  check("no ERROR notifications", #captured_errors == 0, table.concat(captured_errors, " | "))
+  local notified = vim.list_extend(vim.deepcopy(captured_errors), noice_errors())
+  check("no ERROR notifications", #notified == 0, table.concat(notified, " | "))
 
   local Config = require "lazy.core.config"
   local spec_errs = {}
@@ -144,6 +173,11 @@ local function check_no_writes()
       changed[#changed + 1] = vim.fn.fnamemodify(path, ":t")
     end
   end
+  for _, path in ipairs(data_json_files()) do
+    if before[path] == nil then
+      changed[#changed + 1] = vim.fn.fnamemodify(path, ":t") .. " (created)"
+    end
+  end
   check("lockfile and persisted state untouched", #changed == 0, table.concat(changed, ", "))
 end
 
@@ -153,11 +187,40 @@ local function run_suites()
   local suites = { "core.lang.smoke" }
   for _, mod in ipairs(suites) do
     local found, suite = pcall(require, mod)
+    check("suite " .. mod .. " loads", found and type(suite) == "function", tostring(suite))
     if found and type(suite) == "function" then
       local success, err = pcall(suite, M)
       check("suite " .. mod .. " ran", success, tostring(err))
     end
   end
+end
+
+---Errors raised while the suites ran (often scheduled, so let the event loop
+---drain first): new :messages errors and new ERROR notifications.
+local function check_late_errors(messages_before, notified_before, noice_before)
+  vim.wait(300, function()
+    return false
+  end)
+  local late = {}
+  local seen = {}
+  for _, line in ipairs(messages_before) do
+    seen[line] = (seen[line] or 0) + 1
+  end
+  for _, line in ipairs(message_errors()) do
+    if (seen[line] or 0) > 0 then
+      seen[line] = seen[line] - 1
+    else
+      late[#late + 1] = line
+    end
+  end
+  for i = notified_before + 1, #captured_errors do
+    late[#late + 1] = captured_errors[i]
+  end
+  local noice_now = noice_errors()
+  for i = noice_before + 1, #noice_now do
+    late[#late + 1] = noice_now[i]
+  end
+  check("no errors while the suites ran", #late == 0, table.concat(late, " | "))
 end
 
 local function finish()
@@ -167,10 +230,11 @@ local function finish()
 end
 
 local function run()
-  wrap_notify()
   local success, err = xpcall(function()
     check_startup()
+    local messages_before, notified_before, noice_before = message_errors(), #captured_errors, #noice_errors()
     run_suites()
+    check_late_errors(messages_before, notified_before, noice_before)
   end, debug.traceback)
   if not success then
     fail("smoke harness crashed", err)

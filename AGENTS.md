@@ -8,11 +8,12 @@ docs/languages.md, docs/keymaps.md.
 ## Commands
 
 ```sh
+make deps      # new machine / CI: restore pinned plugins, install all packs' tools
 make check     # definition of done: lint + test + startup
 make lint      # stylua --check and luacheck on lua/ scripts/ colors/
 make fmt       # stylua
 make test      # scripts/smoke.sh default all none (headless, isolated state)
-make startup   # median headless startup; warns > 30 ms, fails > 35 ms
+make startup   # median headless startup (default packs); warns > 30 ms, fails > 35 ms
 scripts/smoke.sh python,go   # smoke with an explicit set of language packs
 ```
 

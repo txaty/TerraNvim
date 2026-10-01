@@ -7,9 +7,10 @@
 -- opts fragments to shared plugins, so a disabled or broken pack cannot
 -- reconfigure or disable them. Schema: docs/languages.md, core/lang/schema.lua.
 --
--- Every pack file is required at startup (lazy.nvim must see every pack's
--- plugins, see plugin_specs()); pack files are data only, so this costs a few
--- microseconds each. Everything else runs when the consuming plugin loads.
+-- Every pack file is loaded at startup (lazy.nvim must see every pack's
+-- plugins, see plugin_specs()): ~0.05-0.1 ms each, ~1-2 ms for the 18 shipped
+-- packs, so keep pack files data only. Everything else runs when the consuming
+-- plugin loads.
 local state = require "core.lang.state"
 
 local M = {}

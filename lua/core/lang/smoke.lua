@@ -105,7 +105,8 @@ return function(T)
   local unconfigured, wrongly_enabled, not_running = {}, {}, {}
   for server, entry in pairs(lang.collect.servers()) do
     if not entry.spec.managed_by then
-      if not vim.lsp.config[server] then
+      local cfg = vim.lsp.config[server]
+      if not cfg or cfg.cmd == nil then
         unconfigured[#unconfigured + 1] = server
       elseif lsp_status[server] ~= "enabled" then
         not_running[#not_running + 1] = server .. "=" .. tostring(lsp_status[server])

@@ -3,9 +3,15 @@ STARTUP_RUNS ?= 5
 STARTUP_WARN_MS ?= 30
 STARTUP_FAIL_MS ?= 35
 
-.PHONY: check fmt lint test startup
+.PHONY: check deps fmt lint test startup
 
 check: lint test startup
+
+# New machine / CI: the pinned plugins (every pack's), then Mason tools and
+# parsers of all packs. Needs network.
+deps:
+	NVIM_LANGS=all nvim --headless "+Lazy! restore" +qa
+	NVIM_LANGS=all nvim --headless "+LangInstall!" +qa
 
 fmt:
 	stylua lua scripts colors

@@ -248,26 +248,19 @@ local steps = {
     end,
   },
   {
-    name = "buffer events + dependent UI",
+    name = "buffer events + window options",
     mode = "sync",
-    -- IMPORTANT: retrigger_buffer_events() is async. UI operations that depend on
-    -- fully initialized buffers (ui_toggle.apply_all, nvim_tree.auto_open) must
-    -- wait until buffer events settle to avoid race conditions.
-    fn = function(ctx)
-      if ctx.session_restored then
-        retrigger_buffer_events(function()
-          log "buffer events complete"
-          if ok_ui then
-            ui_toggle.apply_all()
-            log "ui_state apply_all (after buffer events)"
-          end
-          require("core.lifecycle.nvim_tree").auto_open(true)
-          log "nvim_tree auto_open (after buffer events)"
-        end)
-      else
-        require("core.lifecycle.nvim_tree").auto_open(false)
-        log "nvim_tree auto_open (no session)"
-      end
+    -- retrigger_buffer_events() is async; window options are applied once the
+    -- restored buffers have gone through their FileType/BufRead handlers.
+    needs_session = true,
+    fn = function()
+      retrigger_buffer_events(function()
+        log "buffer events complete"
+        if ok_ui then
+          ui_toggle.apply_all()
+          log "ui_state apply_all (after buffer events)"
+        end
+      end)
     end,
   },
   {
@@ -279,17 +272,6 @@ local steps = {
       if ok_cmd and commands.register_all then
         commands.register_all()
       end
-    end,
-  },
-  {
-    name = "reconcile",
-    mode = "very_lazy",
-    -- Bufferline highlights the active tab by comparing nvim_get_current_buf()
-    -- against its tab list. Wait for VeryLazy (after bufferline.setup()) then
-    -- move focus to a real file buffer so the tabline renders correctly.
-    needs_session = true,
-    fn = function()
-      require("core.lifecycle.reconcile").ensure_focus()
     end,
   },
   {

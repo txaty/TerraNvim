@@ -59,8 +59,7 @@ map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights
 --------------------------------------
 -- Files
 --------------------------------------
--- <C-n> (toggle explorer) is owned by lua/plugins/ui.lua for lazy-loading.
-map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
+-- <C-n> / <leader>fe (explorer) are owned by lua/plugins/snacks.lua.
 map("n", "<leader>fW", "<cmd>w<cr>", { desc = "Files: save" })
 
 ---Copy a modifier-expanded form of the current file's name to the clipboard.
@@ -97,7 +96,6 @@ map("n", "<leader>us", ui_toggle "spell", { desc = "UI: Toggle spell check" })
 map("n", "<leader>un", ui_toggle "number", { desc = "UI: Toggle line numbers" })
 map("n", "<leader>ur", ui_toggle "relativenumber", { desc = "UI: Toggle relative numbers" })
 map("n", "<leader>uc", ui_toggle "conceallevel", { desc = "UI: Toggle conceal" })
-map("n", "<leader>ug", ui_toggle "tree_git", { desc = "UI: Toggle nvim-tree git status" })
 map("n", "<leader>ud", ui_toggle "dim", { desc = "UI: Toggle dim" })
 map("n", "<leader>uD", ui_toggle "diagnostic_lines", { desc = "UI: Toggle inline diagnostics" })
 

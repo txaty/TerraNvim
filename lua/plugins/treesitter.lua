@@ -71,71 +71,39 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     config = function()
-      local select = require "nvim-treesitter-textobjects.select"
       local move = require "nvim-treesitter-textobjects.move"
       local swap = require "nvim-treesitter-textobjects.swap"
 
-      require("nvim-treesitter-textobjects").setup {
-        select = { lookahead = true },
-      }
+      -- Selection (af/if, ac/ic, ...) is owned by mini.ai (lua/plugins/mini-ai.lua),
+      -- which reuses these queries; this plugin only provides motions and swaps.
+      require("nvim-treesitter-textobjects").setup { move = { set_jumps = true } }
 
-      -- Select textobjects
-      for _, map in ipairs {
-        { "af", "@function.outer" },
-        { "if", "@function.inner" },
-        { "ac", "@class.outer" },
-        { "ic", "@class.inner" },
-        { "aa", "@parameter.outer" },
-        { "ia", "@parameter.inner" },
-      } do
-        vim.keymap.set({ "x", "o" }, map[1], function()
-          select.select_textobject(map[2], "textobjects")
-        end, { desc = "Select " .. map[2] })
+      ---@param lhs string
+      ---@param fn "goto_next_start"|"goto_next_end"|"goto_previous_start"|"goto_previous_end"
+      ---@param query string
+      local function map_move(lhs, fn, query)
+        vim.keymap.set({ "n", "x", "o" }, lhs, function()
+          -- ]c/[c are also Vim's "next/previous change" in diff mode; keep that
+          -- meaning there (same approach as LazyVim).
+          if vim.wo.diff and lhs:find "[cC]" then
+            return vim.cmd("normal! " .. vim.v.count1 .. lhs)
+          end
+          move[fn](query, "textobjects")
+        end, { desc = fn:gsub("_", " "):gsub("^goto ", "") .. " " .. query })
       end
 
-      -- Move: goto next start
-      for _, map in ipairs {
-        { "]f", "@function.outer" },
-        { "]c", "@class.outer" },
-        { "]a", "@parameter.inner" },
-      } do
-        vim.keymap.set({ "n", "x", "o" }, map[1], function()
-          move.goto_next_start(map[2], "textobjects")
-        end, { desc = "Next " .. map[2] .. " start" })
-      end
+      map_move("]f", "goto_next_start", "@function.outer")
+      map_move("]F", "goto_next_end", "@function.outer")
+      map_move("[f", "goto_previous_start", "@function.outer")
+      map_move("[F", "goto_previous_end", "@function.outer")
+      map_move("]c", "goto_next_start", "@class.outer")
+      map_move("]C", "goto_next_end", "@class.outer")
+      map_move("[c", "goto_previous_start", "@class.outer")
+      map_move("[C", "goto_previous_end", "@class.outer")
+      -- Parameters use ], / [, so Neovim's default ]a/[a (arglist) keep working.
+      map_move("],", "goto_next_start", "@parameter.inner")
+      map_move("[,", "goto_previous_start", "@parameter.inner")
 
-      -- Move: goto next end
-      for _, map in ipairs {
-        { "]F", "@function.outer" },
-        { "]C", "@class.outer" },
-      } do
-        vim.keymap.set({ "n", "x", "o" }, map[1], function()
-          move.goto_next_end(map[2], "textobjects")
-        end, { desc = "Next " .. map[2] .. " end" })
-      end
-
-      -- Move: goto previous start
-      for _, map in ipairs {
-        { "[f", "@function.outer" },
-        { "[c", "@class.outer" },
-        { "[a", "@parameter.inner" },
-      } do
-        vim.keymap.set({ "n", "x", "o" }, map[1], function()
-          move.goto_previous_start(map[2], "textobjects")
-        end, { desc = "Prev " .. map[2] .. " start" })
-      end
-
-      -- Move: goto previous end
-      for _, map in ipairs {
-        { "[F", "@function.outer" },
-        { "[C", "@class.outer" },
-      } do
-        vim.keymap.set({ "n", "x", "o" }, map[1], function()
-          move.goto_previous_end(map[2], "textobjects")
-        end, { desc = "Prev " .. map[2] .. " end" })
-      end
-
-      -- Swap parameters
       vim.keymap.set("n", "<leader>sa", function()
         swap.swap_next "@parameter.inner"
       end, { desc = "Swap next parameter" })

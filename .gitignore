@@ -1,1 +1,4 @@
 spell/
+# Personal layer (see lua/user/settings.example.lua)
+/lua/user/*
+!/lua/user/settings.example.lua

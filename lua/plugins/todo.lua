@@ -66,8 +66,10 @@ return {
       },
       {
         "<leader>ft",
-        "<cmd>TodoTelescope<cr>",
-        desc = "Todo (Telescope)",
+        function()
+          Snacks.picker.todo_comments()
+        end,
+        desc = "Find todos",
       },
     },
   },

@@ -7,7 +7,8 @@ return {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
+      "folke/snacks.nvim",
     },
-    opts = {},
+    opts = { picker = "snacks" },
   },
 }

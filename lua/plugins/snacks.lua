@@ -1,5 +1,6 @@
 -- Snacks.nvim: Unified UI/UX plugin collection from folke
--- Replaces: nvim-notify, indent-blankline, vim-illuminate, zen-mode, twilight, telescope (picker)
+-- Picker, explorer, terminal, lazygit, dashboard, indent guides, word highlights,
+-- zen mode, scratch buffers and more (see `opts` below for what is enabled).
 
 -- Session-persistent grep filters
 local grep_filters = {
@@ -155,11 +156,11 @@ return {
           { section = "startup" },
         },
       },
-      -- Snacks picker (replaces Telescope for better performance)
+      -- Picker (files, grep, LSP, git, ...); also used by the explorer
       picker = {
         enabled = true,
         layout = {
-          preset = "telescope", -- Familiar Telescope-like layout
+          preset = "telescope", -- prompt at the top, preview on the right
         },
         sources = {
           files = { hidden = true, follow = true },
@@ -322,7 +323,7 @@ return {
         end,
         desc = "Files: Reveal file in explorer",
       },
-      -- Snacks Picker (replaces Telescope)
+      -- Picker
       {
         "<leader>ff",
         function()

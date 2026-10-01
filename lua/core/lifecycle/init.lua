@@ -225,7 +225,7 @@ local steps = {
     name = "session restore",
     mode = "sync",
     fn = function(ctx)
-      if vim.g.enable_session_persistence == true then
+      if require("core.session_toggle").is_enabled() then
         ctx.session_restored = require("core.lifecycle.session").restore()
       else
         log "session restore skipped (disabled by default)"
@@ -305,7 +305,7 @@ local steps = {
     mode = "deferred",
     delay_ms = 2000,
     -- Deferred 2s to keep it off the startup path. core.cleanup.auto_cleanup()
-    -- owns both gates (the vim.g.enable_auto_cleanup opt-in and the 24h
+    -- owns both gates (the settings `cleanup.auto` opt-in and the 24h
     -- throttle) and reports whether it actually ran; duplicating either check
     -- here is what let the enable/disable flags drift apart previously.
     fn = function()

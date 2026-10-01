@@ -122,7 +122,7 @@ return {
         group = vim.api.nvim_create_augroup("DistantLspAttach", { clear = true }),
         pattern = "distant://*",
         callback = function()
-          if vim.g.enable_lsp_automatic_start ~= true then
+          if not require("core.settings").get "lsp.auto_start" then
             return
           end
           -- LSP should attach automatically to remote buffers

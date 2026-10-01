@@ -313,17 +313,11 @@ local function save_cleanup_time()
   persist.save_lines(timestamp_file, { tostring(os.time()) })
 end
 
---- Is startup cleanup both enabled and outside its throttle window?
----
---- Single owner of that decision. It used to be spread over three places — a
---- `condition` in the lifecycle step, an `enable_auto_cleanup` check inside
---- auto_cleanup(), and a `disable_auto_cleanup` opt-out here — with the two
---- flags pointing in opposite directions. `vim.g.enable_auto_cleanup` is the
---- documented opt-in and is now the only flag; a config that never sets it
---- never runs startup cleanup, which is what the old opt-out was for.
+--- Is startup cleanup both enabled (settings `cleanup.auto`) and outside its
+--- throttle window? Single owner of that decision.
 ---@return boolean
 function M.should_run()
-  if vim.g.enable_auto_cleanup ~= true then
+  if not require("core.settings").get "cleanup.auto" then
     return false
   end
 

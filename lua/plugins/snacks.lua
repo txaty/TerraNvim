@@ -1,29 +1,22 @@
 -- Snacks.nvim: Unified UI/UX plugin collection from folke
 -- Replaces: nvim-notify, indent-blankline, vim-illuminate, zen-mode, twilight, telescope (picker)
 
--- Session-persistent grep filters (shared between Snacks picker and Telescope)
+-- Session-persistent grep filters
 local grep_filters = {
   include = nil, -- glob pattern: "*.py", "src/**/*.ts"
   exclude = nil, -- glob pattern: "node_modules", "*.test.js"
   type = nil, -- ripgrep type: "py", "js", "go", "rust", etc.
 }
 
--- File type presets for quick selection
-local file_types = {
-  { label = "All files", type = nil },
-  { label = "Python (.py)", type = "py" },
-  { label = "JavaScript (.js)", type = "js" },
-  { label = "TypeScript (.ts)", type = "ts" },
-  { label = "Rust (.rs)", type = "rust" },
-  { label = "Go (.go)", type = "go" },
-  { label = "Lua (.lua)", type = "lua" },
-  { label = "C/C++ (.c/.cpp/.h)", type = "cpp" },
-  { label = "Markdown (.md)", type = "md" },
-  { label = "JSON (.json)", type = "json" },
-  { label = "YAML (.yaml/.yml)", type = "yaml" },
-  { label = "HTML (.html)", type = "html" },
-  { label = "CSS (.css)", type = "css" },
-}
+-- File type presets for quick selection: "All files" plus the ripgrep type of
+-- every enabled language pack (lua/langs/*.lua `grep_type`).
+local function file_types()
+  local presets = { { label = "All files", type = nil } }
+  for _, preset in ipairs(require("core.lang").collect.grep_types()) do
+    presets[#presets + 1] = { label = ("%s (%s)"):format(preset.label, preset.type), type = preset.type }
+  end
+  return presets
+end
 
 -- Build ripgrep args from filter state
 local function build_snacks_grep_args()
@@ -86,7 +79,7 @@ end
 
 -- Select file type from presets then search
 local function snacks_grep_by_type()
-  vim.ui.select(file_types, {
+  vim.ui.select(file_types(), {
     prompt = "File type:",
     format_item = function(item)
       return item.label

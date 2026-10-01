@@ -42,41 +42,21 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
       "nvim-neotest/nvim-nio",
-      {
-        "nvim-neotest/neotest-python",
-        cond = function()
-          return require("core.lang_toggle").is_enabled "python"
-        end,
-      },
-      {
-        "nvim-neotest/neotest-go",
-        cond = function()
-          return require("core.lang_toggle").is_enabled "go"
-        end,
-      },
-      {
-        "rouge8/neotest-rust",
-        cond = function()
-          return require("core.lang_toggle").is_enabled "rust"
-        end,
-      },
     },
     config = function()
+      -- Adapters come from the enabled language packs (`test.adapter`); their
+      -- plugins are pack-owned lazy specs that load on require.
       local adapters = {}
-
-      local python_ok, neotest_python = pcall(require, "neotest-python")
-      if python_ok then
-        table.insert(adapters, neotest_python { dap = { justMyCode = false } })
-      end
-
-      local go_ok, neotest_go = pcall(require, "neotest-go")
-      if go_ok then
-        table.insert(adapters, neotest_go {})
-      end
-
-      local rust_ok, neotest_rust = pcall(require, "neotest-rust")
-      if rust_ok then
-        table.insert(adapters, neotest_rust {})
+      local lang = require "core.lang"
+      for _, entry in ipairs(lang.collect.tests()) do
+        local ok, adapter = pcall(entry.adapter, lang.opts(entry.pack))
+        if ok and type(adapter) == "table" and vim.islist(adapter) then
+          vim.list_extend(adapters, adapter) -- a pack may return several adapters
+        elseif ok and adapter then
+          adapters[#adapters + 1] = adapter
+        elseif not ok then
+          vim.notify(("neotest adapter for %s failed: %s"):format(entry.pack, adapter), vim.log.levels.WARN)
+        end
       end
 
       require("neotest").setup {

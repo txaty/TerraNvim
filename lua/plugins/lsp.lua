@@ -16,56 +16,31 @@ return {
     opts = {},
   },
 
+  -- Tool installer. Packages of enabled language packs are installed by
+  -- core.lang.install (auto on first use, or :LangInstall); Mason's bin dir is
+  -- put on PATH at startup by core.lang.setup(), hence PATH = "skip".
   {
     "mason-org/mason.nvim",
-    cmd = "Mason",
+    cmd = { "Mason", "MasonInstall", "MasonUninstall", "MasonUpdate", "MasonLog" },
     keys = { { "<leader>lm", "<cmd>Mason<cr>", desc = "LSP: Mason" } },
-    opts = {
-      ensure_installed = {
-        "lua-language-server",
-        "stylua",
-      },
-    },
-    config = function(_, opts)
-      require("mason").setup(opts)
-
-      -- Custom command to clean install
-      vim.api.nvim_create_user_command("MasonInstallAll", function()
-        vim.cmd { cmd = "MasonInstall", args = opts.ensure_installed }
-      end, {})
-    end,
+    opts = { PATH = "skip" },
   },
 
-  -- Mason-LSPconfig bridge (explicit plugin spec for language file extensions)
-  -- Language files use lang_utils.extend_mason_lspconfig() to add servers.
-  -- This spec ensures mason-lspconfig has a configuration point that language
-  -- files can merge into via opts functions.
-  {
-    "mason-org/mason-lspconfig.nvim",
-    lazy = true, -- Loaded as dependency of lspconfig
-    dependencies = { "mason-org/mason.nvim" },
-    opts = {
-      ensure_installed = { "lua_ls", "bashls", "marksman" },
-      -- Keep server enable timing under our control in lspconfig.config()
-      -- so vim.lsp.config() runs before clients are started.
-      automatic_enable = false,
-    },
-  },
+  -- JSON/YAML schemas for jsonls and yamlls (used by the json and yaml packs).
+  { "b0o/SchemaStore.nvim", lazy = true, version = false },
 
+  -- nvim-lspconfig is only a source of lsp/<name>.lua configs for
+  -- vim.lsp.config(); which servers run is decided by core.lang.lsp from the
+  -- enabled language packs.
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "mason-org/mason.nvim",
-      "mason-org/mason-lspconfig.nvim",
-      { "folke/lazydev.nvim", ft = "lua", opts = {} },
+      -- Loads first; its plugin/ file registers completion capabilities for
+      -- every server via vim.lsp.config("*").
       { "saghen/blink.cmp", optional = true },
-      -- dropbar.nvim handles breadcrumbs independently via treesitter + LSP
     },
-    opts = {},
-    config = function(_, opts)
-      local capabilities = require("core.lsp_capabilities").get()
-
+    config = function()
       -- Diagnostic appearance
       -- Respect persisted diagnostic_lines toggle (set by ui_toggle at VimEnter Step 3,
       -- before this config() runs at BufReadPre). If the user had virtual_lines enabled,
@@ -130,57 +105,7 @@ return {
         end,
       })
 
-      -- Configure servers using new vim.lsp.config API (Neovim 0.11+)
-      -- This replaces the deprecated require('lspconfig') framework
-      vim.lsp.config("lua_ls", {
-        capabilities = capabilities,
-        settings = {
-          Lua = {
-            diagnostics = { globals = { "vim" } },
-          },
-        },
-      })
-
-      -- Process language-specific server configs from opts.servers
-      -- (set by language files via lang_utils.extend_lspconfig)
-      if opts.servers then
-        for server_name, server_config in pairs(opts.servers) do
-          local config = vim.tbl_deep_extend("force", {
-            capabilities = capabilities,
-          }, server_config)
-          vim.lsp.config(server_name, config)
-        end
-      end
-
-      -- Enable installed servers after all vim.lsp.config() calls above.
-      -- mason-lspconfig v2 removed setup_handlers(); get_installed_servers() is
-      -- the stable API to enumerate installed servers.
-      local ok, mason_lspconfig = pcall(require, "mason-lspconfig")
-      if not ok then
-        vim.notify("mason-lspconfig not available, skipping server enable", vim.log.levels.WARN)
-        return
-      end
-
-      if not mason_lspconfig.get_installed_servers then
-        vim.notify("mason-lspconfig.get_installed_servers not available", vim.log.levels.ERROR)
-        return
-      end
-
-      -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
-      -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
-      if not require("core.settings").get "lsp.auto_start" then
-        return
-      end
-
-      local skip = { rust_analyzer = true, ltex = true }
-      for _, server_name in ipairs(mason_lspconfig.get_installed_servers()) do
-        if not skip[server_name] then
-          vim.lsp.enable(server_name)
-        end
-      end
-
-      -- IMPORTANT: rust-analyzer is handled exclusively by rustaceanvim
-      -- (in lua/plugins/rust.lua). We skip it here to avoid conflicts.
+      require("core.lang.lsp").setup()
     end,
   },
 

@@ -1,5 +1,5 @@
 -- Unified JSON config persistence with caching
--- Consolidates duplicate load/save patterns from ai_toggle, lang_toggle, ui_toggle, theme
+-- Consolidates duplicate load/save patterns from ai_toggle, core.lang.state, ui_toggle, theme
 local M = {}
 local cache = {} -- Keyed by filepath
 

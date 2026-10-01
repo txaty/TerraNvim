@@ -25,6 +25,19 @@ M.defaults = {
   lint = {
     enabled = true, -- nvim-lint on read/write/insert-leave (toggle: <leader>ul)
   },
+  install = {
+    -- Install missing Mason tools and treesitter parsers of ENABLED language
+    -- packs the first time one of their files is opened (needs network, never
+    -- runs headless). :LangInstall always works.
+    auto = true,
+  },
+  langs = {
+    -- Packs enabled on a fresh install; :LangEnable/:LangPanel persist changes
+    -- per machine. The full list is in lua/langs/.
+    default = { "lua", "bash", "json", "yaml", "toml", "markdown" },
+    hint_disabled = true, -- suggest :LangEnable when opening a file of a disabled pack
+    options = {}, -- per-pack option defaults, e.g. { typescript = { server = "tsc" } }
+  },
   session = {
     persistence = true, -- default for :SessionToggle (auto save + restore per cwd)
   },

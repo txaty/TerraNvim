@@ -19,6 +19,7 @@ vim.loader.enable()
 
 require "core.options"
 require "core.keymaps"
+require("core.lang").setup() -- language packs: Mason PATH, filetypes, FileType dispatcher
 require("core.autocmds").setup()
 require("core.lifecycle").setup()
 require("core.keymap_audit").setup()

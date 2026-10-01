@@ -129,6 +129,7 @@ map("n", "<leader>cN", theme_picker("cycle", -1), { desc = "Color: previous them
 -- <leader>q{s,S,l,d} are owned by lua/plugins/session.lua (persistence.nvim).
 map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
 map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
+map("n", "<leader>qr", "<cmd>restart<cr>", { desc = "Restart Neovim (keeps session)" })
 map("n", "<leader>qp", function()
   require("core.session_toggle").toggle()
 end, { desc = "Session: toggle auto persistence" })

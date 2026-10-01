@@ -535,6 +535,57 @@ return {
             Snacks.debug.backtrace()
           end
           vim.print = _G.dd
+
+          -- Runtime toggles for core.settings switches. Session-scoped on
+          -- purpose: the persistent default lives in lua/user/settings.lua.
+          local settings = require "core.settings"
+          Snacks.toggle
+            .new({
+              id = "format_on_save",
+              name = "Format on save",
+              get = function()
+                return settings.get "format.on_save"
+              end,
+              set = function(state)
+                settings.set("format.on_save", state)
+              end,
+            })
+            :map "<leader>uf"
+          Snacks.toggle
+            .new({
+              id = "format_on_save_buffer",
+              name = "Format on save (buffer)",
+              get = function()
+                return vim.b.autoformat ~= false
+              end,
+              set = function(state)
+                vim.b.autoformat = state
+              end,
+            })
+            :map "<leader>uF"
+          Snacks.toggle
+            .new({
+              id = "lint",
+              name = "Lint",
+              get = function()
+                return settings.get "lint.enabled"
+              end,
+              set = function(state)
+                settings.set("lint.enabled", state)
+                if not state and package.loaded.lint then
+                  -- Nothing re-runs the linters while disabled, so drop
+                  -- their diagnostics instead of leaving stale ones.
+                  local lint = require "lint"
+                  for _, names in pairs(lint.linters_by_ft) do
+                    for _, name in ipairs(type(names) == "table" and names or {}) do
+                      vim.diagnostic.reset(lint.get_namespace(name))
+                    end
+                  end
+                end
+              end,
+            })
+            :map "<leader>ul"
+          Snacks.toggle.inlay_hints():map "<leader>uh"
         end,
       })
     end,

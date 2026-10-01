@@ -96,6 +96,9 @@ end
 ---@param filepath string Full path to JSON file
 ---@param config table Config to save
 function M.save_json(filepath, config)
+  if vim.g.nvim_smoke then
+    return true -- smoke tests must not touch persisted state (scripts/smoke.lua)
+  end
   local ok, err = validate_write_path(filepath)
   if not ok then
     vim.notify("Blocked JSON write: " .. err, vim.log.levels.ERROR)
@@ -116,6 +119,9 @@ end
 ---@param lines string[]
 ---@return boolean
 function M.save_lines(filepath, lines)
+  if vim.g.nvim_smoke then
+    return true
+  end
   local ok, err = validate_write_path(filepath)
   if not ok then
     vim.notify("Blocked file write: " .. err, vim.log.levels.ERROR)

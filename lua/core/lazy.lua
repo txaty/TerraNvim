@@ -30,7 +30,9 @@ require("lazy").setup {
     { import = "plugins.languages" },
   },
   defaults = { lazy = true },
-  install = { missing = true },
+  -- scripts/smoke.lua sets vim.g.nvim_smoke: tests must never clone plugins or
+  -- rewrite lazy-lock.json, so missing plugins are reported instead of installed.
+  install = { missing = not vim.g.nvim_smoke },
   checker = { enabled = false }, -- disable auto-check for better performance (use :Lazy check)
   performance = {
     rtp = {

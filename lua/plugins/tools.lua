@@ -3,7 +3,7 @@ return {
   -- Formatting with conform.nvim
   {
     "stevearc/conform.nvim",
-    dependencies = { "williamboman/mason.nvim" },
+    dependencies = { "mason-org/mason.nvim" },
     event = { "BufWritePre" },
     cmd = "ConformInfo",
     keys = {
@@ -42,7 +42,7 @@ return {
   {
     "zapling/mason-conform.nvim",
     cmd = { "Mason", "ConformInfo" },
-    dependencies = { "williamboman/mason.nvim", "stevearc/conform.nvim" },
+    dependencies = { "mason-org/mason.nvim", "stevearc/conform.nvim" },
     opts = {},
   },
 
@@ -53,7 +53,7 @@ return {
     dependencies = {
       {
         "rshkarin/mason-nvim-lint",
-        dependencies = { "williamboman/mason.nvim" },
+        dependencies = { "mason-org/mason.nvim" },
         opts = {},
       },
     },

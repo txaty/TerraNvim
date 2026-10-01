@@ -24,7 +24,7 @@ end
 -- @return table: Plugin spec for mason.nvim
 function M.extend_mason(tools)
   return {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, tools)
@@ -52,7 +52,7 @@ end
 -- @return table: Plugin spec for mason-lspconfig.nvim
 function M.extend_mason_lspconfig(servers)
   return {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, servers)

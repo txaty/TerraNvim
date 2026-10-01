@@ -17,7 +17,7 @@ return {
   },
 
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     cmd = "Mason",
     keys = { { "<leader>lm", "<cmd>Mason<cr>", desc = "LSP: Mason" } },
     opts = {
@@ -41,9 +41,9 @@ return {
   -- This spec ensures mason-lspconfig has a configuration point that language
   -- files can merge into via opts functions.
   {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     lazy = true, -- Loaded as dependency of lspconfig
-    dependencies = { "williamboman/mason.nvim" },
+    dependencies = { "mason-org/mason.nvim" },
     opts = {
       ensure_installed = { "lua_ls", "bashls", "marksman" },
       -- Keep server enable timing under our control in lspconfig.config()
@@ -56,8 +56,8 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
+      "mason-org/mason.nvim",
+      "mason-org/mason-lspconfig.nvim",
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
       { "saghen/blink.cmp", optional = true },
       -- dropbar.nvim handles breadcrumbs independently via treesitter + LSP

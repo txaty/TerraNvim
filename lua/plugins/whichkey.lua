@@ -46,7 +46,6 @@ return {
         { "<leader>n", group = "Notify", icon = "󰂞" },
         { "<leader>o", group = "Tasks", icon = "󰑮" },
         { "<leader>q", group = "Session", icon = "󰁯" },
-        { "<leader>r", group = "Remote", icon = "󰢹" },
         { "<leader>s", group = "Search/Symbols", icon = "󰑑" },
         { "<leader>t", group = "Test", icon = "󰙨" },
         { "<leader>T", group = "Terminal", icon = "" },

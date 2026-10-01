@@ -19,9 +19,6 @@ vim.loader.enable()
 
 require "core.options"
 require "core.keymaps"
--- Apply persisted session-persistence flag before lifecycle registers its
--- VimEnter step that reads vim.g.enable_session_persistence.
-require("core.session_toggle").init()
 require("core.autocmds").setup()
 require("core.lifecycle").setup()
 require("core.keymap_audit").setup()

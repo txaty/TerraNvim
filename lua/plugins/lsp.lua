@@ -145,14 +145,8 @@ return {
           -- lazy-lock.json and always present, so no fallback is needed.
           map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
           map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
-          map("n", "<leader>lf", function()
-            local ok, conform = pcall(require, "conform")
-            if ok then
-              conform.format { async = true, lsp_fallback = true }
-            else
-              vim.lsp.buf.format { async = true }
-            end
-          end, { buffer = ev.buf, desc = "LSP: Format document" })
+          -- <leader>lf is owned by conform.nvim (lua/plugins/tools.lua) so it also
+          -- works in buffers without an attached client.
 
           -- Diagnostic navigation (vim.diagnostic.jump replaces deprecated goto_prev/goto_next)
           map("n", "[d", function()
@@ -203,16 +197,7 @@ return {
 
       -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
       -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
-      if vim.g.enable_lsp_automatic_start ~= true then
-        vim.schedule(function()
-          vim.notify(
-            table.concat({
-              "Automatic LSP start is disabled by security defaults.",
-              "Use :LspStart or set vim.g.enable_lsp_automatic_start = true.",
-            }, " "),
-            vim.log.levels.INFO
-          )
-        end)
+      if not require("core.settings").get "lsp.auto_start" then
         return
       end
 

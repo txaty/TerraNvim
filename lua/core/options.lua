@@ -139,6 +139,9 @@ opt.viewoptions = "folds"
 -- UI Polish
 --------------------------------------
 opt.cmdheight = 0 -- Hide cmdline when not in use (works with noice.nvim)
+-- Default border for floating windows that do not set one (Neovim 0.11+):
+-- LSP hover/signature, diagnostics and most plugin floats.
+opt.winborder = "rounded"
 opt.scrolloff = 8 -- Keep 8 lines visible above/below cursor
 opt.sidescrolloff = 8 -- Keep 8 columns visible left/right of cursor
 opt.pumheight = 10 -- Limit popup menu height

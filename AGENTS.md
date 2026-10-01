@@ -1,94 +1,118 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Structure & Module Organization
-- Root: `init.lua` (entry), `lazy-lock.json` (plugin lockfile), `.stylua.toml` (Lua formatting), `.luacheckrc` (Lua linter)
-- `lua/core/` — Fundamental settings and bootstrap:
-  - `init.lua` — Loads core modules, then lazy bootstrap
-  - `options.lua`, `keymaps.lua`, `lazy.lua`
-  - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state, images)
-  - `ui/` — Config-owned UI that owns no plugin (`theme_picker.lua`, `lang_panel.lua`)
-  - `lifecycle/` — VimEnter orchestration via declarative `steps` table (see `run_sequence()` in `lifecycle/init.lua`; add/remove steps by editing the table)
-  - `commands/` — User commands (ai, lang, cleanup, ui, session, theme; `flag_commands.lua` is the shared factory)
-  - `theme.lua` — Theme registry (`get_themes()` for the dark/light lists, `get_theme_info()` for the name→metadata map, `get_registry_entry(name)` for one entry; `M.themes` / `M.theme_info` still work via `__index`)
-  - `theme_txaty.lua`, `theme_txaty_colors.lua`, `theme_txaty_highlights.lua` — Custom theme split into entry point / palette / highlight groups
-  - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
-  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua`, `cleanup.lua` (source-of-truth modules)
-  - `persist_flag.lua` — Factory behind `ai_toggle.lua` and `session_toggle.lua`
-- `lua/plugins/` — Self-contained plugin specs with inlined configs.
-  **`import` is not recursive**: `core/lazy.lua` lists `plugins` and
-  `plugins.languages` explicitly; a new subdirectory needs its own entry there
-  or its specs are silently ignored.
-  - `lsp.lua` — Mason + vim.lsp.config (Neovim 0.11+ API), enables installed servers via `mason-lspconfig.get_installed_servers()`
-  - `tools.lua` — conform.nvim + nvim-lint
-  - `cmp.lua`, `treesitter.lua`, `ui.lua`, `snacks.lua`, `telescope.lua`
-  - `git.lua`, `lazygit.lua`, `remote.lua`, `copilot.lua`, `session.lua`
-  - `dap.lua`, `test.lua`, `tasks.lua`
-  - `languages/` — python.lua, rust.lua, go.lua, web.lua, flutter.lua
-- `lua/dap_configs/` — Language-specific DAP configs. Not `lua/dap/`: that path
-  collides with nvim-dap's own `dap.*` require namespace.
-- **Note**: `lua/configs/` and NvChad directories removed. All config inlined in plugin specs.
+A general-purpose Neovim 0.12 distribution (lazy.nvim, snacks.nvim,
+`vim.lsp.config`). Optimised for startup time (about 25 ms headless) and for
+adding languages without touching shared code. User docs: README.md,
+docs/languages.md, docs/keymaps.md.
 
-## Build, Test, and Development Commands
-```bash
-stylua lua/                                       # Format Lua
-luacheck lua/                                     # Lint Lua
-nvim --headless '+checkhealth' +qa                # Health check
-nvim --headless "+lua require('lazy').sync()" +qa # Sync plugins
-nvim --headless '+TSUpdateSync' +qa               # Update Treesitter
+## Commands
+
+```sh
+make check     # definition of done: lint + test + startup
+make lint      # stylua --check and luacheck on lua/ scripts/ colors/
+make fmt       # stylua
+make test      # scripts/smoke.sh default all none (headless, isolated state)
+make startup   # median headless startup; warns > 30 ms, fails > 35 ms
+scripts/smoke.sh python,go   # smoke with an explicit set of language packs
 ```
 
-Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
+The smoke test runs this checkout (via a temporary XDG_CONFIG_HOME symlink)
+with a temporary XDG_STATE_HOME. Under `vim.g.nvim_smoke` it never installs
+plugins/tools or writes persisted JSON; it fails if lazy-lock.json or any
+`stdpath("data")/*.json` changes. Inspect behaviour headlessly the same way.
+Note that lazy.nvim only fires `VeryLazy` on UIEnter, which headless never
+gets; `scripts/smoke.lua` shows how to emulate it.
 
-### Feature Toggles
-- Theme: `<leader>cc` (picker), `<leader>cd/cl/cp` (dark/light/txaty), `<leader>cn/cN` (cycle)
-- AI: `:AIToggle`, `<leader>ai` (requires restart)
-- Language: `:LangPanel`, `<leader>Lp` (panel), `<leader>Ls` (status)
-- UI: `<leader>u*` (`uw` wrap, `us` spell, `un` numbers, `ur` relative, `uc` conceal)
-- Keymaps: conflict audit auto-runs on `VeryLazy`; use `:lua require("core.keymap_audit").full_audit()` for manual checks
-- Cleanup: `:CleanupNvim` (manual, always runs; startup cleanup only when `vim.g.enable_auto_cleanup = true`)
-- Session: `:SessionToggle` / `<leader>qp` (default enabled, persisted)
-- Rust: `<leader>R*` (runnables, testables, Cargo.toml via rustaceanvim)
-- Crates: `<leader>C*` in Cargo.toml (upgrade, versions, features)
+## Layout and where things go
 
-## Coding Style & Naming Conventions
-- Lua: 2-space indent; avoid globals; prefer local helpers
-- Filenames: lowercase snake_case
-- Plugin specs in `lua/plugins/`; inline configs in `opts` or `config` functions
-- Formatting via conform.nvim: stylua (Lua), black/isort (Python), goimports/gofmt (Go), rustfmt (Rust), prettier (JS/TS/HTML/CSS)
-- **Comment non-obvious implementations**: When a change resolves a compatibility issue, plugin API migration, version-specific behavior, or any non-obvious problem, add a comment explaining (1) what problem it solves, (2) why this approach was chosen, and (3) version constraints or what breaks if reverted. Omit comments where intent is self-evident.
+- `init.lua` → `lua/core/init.lua`: options, keymaps, `core.lang.setup()`,
+  autocmds, lifecycle (VimEnter steps table), then `core/lazy.lua`.
+- `lua/core/settings.lua`: every user-facing switch and its default.
+  Users override it in the gitignored `lua/user/settings.lua`; read values
+  with `require("core.settings").get("a.b")`. Do not add `vim.g` feature
+  flags.
+- `lua/plugins/*.lua`: shared plugin specs, imported by lazy.nvim. The import
+  is not recursive; subdirectories need their own `{ import = ... }`.
+- `lua/langs/*.lua`: language packs, the only place for language-specific
+  configuration (servers, formatters, linters, DAP, tests, keymaps). See
+  `lua/langs/AGENTS.md`. Shared plugins read enabled packs through
+  `core.lang` collectors when they load.
+- `lua/core/lang/`: pack registry, installer, LSP wiring, runtime, health,
+  schema and smoke suite.
+- `lua/core/theme*.lua`, `colors/`: theme registry (keys are colorscheme
+  names) and the built-in txaty theme.
+- There is no `lua/configs/` directory: inline plugin config in `opts` or
+  `config`.
 
-## Testing Guidelines
-- Manual: Open files (py, go, rs, ts, tex, lua), verify LSP (`:LspInfo`), formatting, linting
-- Headless: Run health, sync, Treesitter commands
-- DAP: Verify via `:Mason`, test breakpoints (`<leader>db`)
-- Theme: Test `:ThemeSwitch`, `<leader>cc`, verify persistence
-- Session: Test restore/save behavior only after enabling `vim.g.enable_session_persistence = true`
-- UI Toggles: Test `<leader>u*`, verify persistence via `:UIStatus`
+## Invariants
 
-## Commit & Pull Request Guidelines
-- Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
-- Commit `lazy-lock.json` when plugins change
-- **CRITICAL: Do NOT add yourself as co-author**
-  - **NEVER** add `Co-Authored-By:` for AI assistants
-  - Commits reflect human author only
-- Run `stylua lua/` and `luacheck lua/` before committing
+- **Lazy-load everything.** `defaults.lazy = true`; each spec needs `event`,
+  `cmd`, `ft` or `keys`. lazy.nvim ORs triggers, so an `event` next to
+  `ft`/`keys` makes them decorative; combine them only when the plugin needs
+  both, and say why in a comment.
+- Exceptions that load at startup: snacks.nvim (`priority = 1000`),
+  nvim-treesitter (its main branch cannot be lazy-loaded), rustaceanvim and
+  vimtex (both ask not to be lazy-loaded; they are pack plugins, off unless
+  their pack is enabled). Colorschemes have no trigger: `core.theme` loads them.
+- **Language packs:**
+  - Pack files are data only, with no top-level `require`/`vim.*`; every pack
+    is read at startup.
+  - Packs never list shared plugins: a fragment with the injected `cond`
+    would disable the plugin for everyone.
+  - Disabled packs' plugins stay in the spec with `cond = false` so
+    lazy-lock.json does not depend on which packs a machine enabled. Install
+    new pack plugins with every pack enabled (`NVIM_LANGS=all`) before
+    committing the lockfile.
+- **LSP:** use `vim.lsp.config()`/`vim.lsp.enable()` (core/lang/lsp.lua), never
+  `require("lspconfig")`. Don't override `cmd`/`root_dir` unless the pack
+  needs to; nvim-lspconfig's `lsp/*.lua` provides them. rust-analyzer belongs
+  to rustaceanvim (`managed_by`). Capabilities come from blink.cmp's
+  `vim.lsp.config("*")`.
+- **Keymaps:** keep Neovim's defaults (`grr gri grt grn gra grx gO K [d ]d an
+  in`). Plugin keymaps go in the plugin's `keys` spec, plugin-free ones in
+  `core/keymaps.lua`, language ones in the pack's `keys`. Update
+  docs/keymaps.md in the same change.
+- **Startup budget:** keep `make startup` under 30 ms. Do work in functions
+  that run on events, not at require time.
 
-## Security & Configuration Tips
-- Don't commit secrets (DAP/API keys). Use env vars or local files.
-- Python: Use venv-selector (`<leader>pv`) over global python3_host_prog
-- LSP: `vim.lsp.config()` API (Neovim 0.11+). **Never** set `cmd` or `root_dir` (conflicts with Mason). Rust via `rustaceanvim`.
-- Theme: Preference in `$XDG_DATA_HOME/theme_config.json`
-- Session: Files in `~/.local/state/nvim/sessions/`. Auto-restore/save require `vim.g.enable_session_persistence = true`.
+## Security rules
 
-## Architecture Notes
-- **No NvChad**: Completely removed. Do not reference or recreate NvChad patterns.
-- **Self-Maintained**: All functionality in `lua/core/` and `lua/plugins/`
-- **Modular**: Each plugin self-contained with config, keymaps, dependencies inlined
-- **Performance**: lazy.nvim with custom settings, disabled runtime plugins, sub-30ms startup
-- **Startup**: `lifecycle/init.lua` handles VimEnter via a declarative `steps` table (theme → UI state → session → buffer events → nvim-tree → commands → reconcile → cleanup)
-- **Theme System**: 78 themes (50 dark, 26 light, 2 custom txaty). Factory pattern for custom theme.
-- **Session**: Restore/save logic exists, but persistence remains opt-in via `vim.g.enable_session_persistence = true`
-- **LSP Migration**: `vim.lsp.config()` API, Rust via `rustaceanvim`
-- **AI Toggle**: Copilot disabled entirely when off, state persisted
-- **Language Toggle**: Per-language tooling disable, state persisted
-- **Remote**: Distant.nvim for VS Code Remote-like experience
+- Never build commands from strings: use `vim.cmd { cmd = ..., args = {...} }`
+  and `vim.system({ "cmd", arg })`. No `loadstring`, `load`, `dofile`,
+  `os.execute` or `io.popen`.
+- Reject shell metacharacters (`|;&$!#` backtick, newline) in user input
+  passed to commands, and confirm external launches (`core.security`).
+- Write files only under `stdpath("data"|"state"|"cache")`, through
+  `core.persist` (refuses symlinks). Delete only with
+  `safe_delete()` in `core/cleanup.lua`.
+- Keep `modeline=false`, `modelines=0`, `exrc=false`, `secure=true`, and the
+  pinned `'shell'`.
+- Every plugin is pinned in lazy-lock.json; `checker` stays disabled. After
+  `:Lazy update`, review the lockfile diff and new `build` hooks, and grep
+  the updated plugins for `os.execute`, `io.popen` and `loadstring`.
+
+## Conventions
+
+- Lua 5.1/LuaJIT, 2-space indent, 120 columns, double quotes, no call
+  parentheses for single string/table arguments (stylua enforces these).
+  Use local helpers, not globals. Files are snake_case.
+- Comment non-obvious code at the site: what it solves, why this approach, and
+  the constraint or version that forces it (e.g. a plugin API migration or a
+  Neovim version guard). Skip comments that restate the code.
+- Verify plugin APIs against the installed source in
+  `~/.local/share/nvim/lazy/<plugin>` rather than from memory; many plugins
+  here changed APIs in 2025–2026 (overseer v2, refactoring 2.0, rustaceanvim
+  9, mason v2, nvim-treesitter main).
+- Commits: Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`,
+  `docs:`, `test:`). Commit lazy-lock.json together with the plugin change.
+  The human operator is the only author: no AI co-author trailers, and no
+  mention of AI tools in commit messages or PRs.
+- User-visible changes get a CHANGELOG.md entry under [Unreleased].
+
+## Done means
+
+1. `make check` passes, with no new smoke warnings you did not expect.
+2. Keymap changes are reflected in docs/keymaps.md, and language changes in
+   docs/languages.md.
+3. Plugin changes come with the lockfile and a note on why the plugin is
+   needed (or why it replaces another).

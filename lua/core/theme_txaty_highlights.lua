@@ -345,52 +345,6 @@ return function(p)
   hl("GitSignsDeleteInline", { bg = p.diff_delete_bg })
 
   -- ==========================================================================
-  -- Plugin: Telescope (~15 groups)
-  -- ==========================================================================
-  hl("TelescopeNormal", { fg = p.fg, bg = p.bg })
-  hl("TelescopeBorder", { fg = p.border, bg = p.bg })
-  hl("TelescopePromptNormal", { fg = p.fg, bg = p.bg_alt })
-  hl("TelescopePromptBorder", { fg = p.border, bg = p.bg_alt })
-  hl("TelescopePromptTitle", { fg = p.fg, bg = p.bg_alt, bold = true })
-  hl("TelescopePromptPrefix", { fg = p.accent3 })
-  hl("TelescopePromptCounter", { fg = p.fg_dim })
-  hl("TelescopePreviewNormal", { fg = p.fg, bg = p.bg })
-  hl("TelescopePreviewBorder", { fg = p.border, bg = p.bg })
-  hl("TelescopePreviewTitle", { fg = p.fg, bg = p.bg, bold = true })
-  hl("TelescopeResultsNormal", { fg = p.fg, bg = p.bg })
-  hl("TelescopeResultsBorder", { fg = p.border, bg = p.bg })
-  hl("TelescopeResultsTitle", { fg = p.fg, bg = p.bg, bold = true })
-  hl("TelescopeSelection", { fg = p.fg, bg = p.bg_highlight })
-  hl("TelescopeSelectionCaret", { fg = p.accent3, bg = p.bg_highlight })
-  hl("TelescopeMatching", { fg = p.accent1, bold = true })
-  hl("TelescopeMultiSelection", { fg = p.accent5 })
-  hl("TelescopeMultiIcon", { fg = p.accent5 })
-
-  -- ==========================================================================
-  -- Plugin: NvimTree (~15 groups)
-  -- ==========================================================================
-  hl("NvimTreeNormal", { fg = p.fg, bg = p.bg })
-  hl("NvimTreeNormalNC", { fg = p.fg_dim, bg = p.bg })
-  hl("NvimTreeRootFolder", { fg = p.fg_dim, bold = true })
-  hl("NvimTreeFolderIcon", { fg = p.accent3 })
-  hl("NvimTreeFolderName", { fg = p.fg })
-  hl("NvimTreeOpenedFolderName", { fg = p.fg, bold = true })
-  hl("NvimTreeEmptyFolderName", { fg = p.fg_dim })
-  hl("NvimTreeIndentMarker", { fg = p.fg_muted })
-  hl("NvimTreeGitDirty", { fg = p.warning })
-  hl("NvimTreeGitNew", { fg = p.success })
-  hl("NvimTreeGitDeleted", { fg = p.error })
-  hl("NvimTreeGitStaged", { fg = p.success })
-  hl("NvimTreeGitMerge", { fg = p.warning })
-  hl("NvimTreeGitRenamed", { fg = p.warning })
-  hl("NvimTreeSpecialFile", { fg = p.accent5 })
-  hl("NvimTreeImageFile", { fg = p.fg })
-  hl("NvimTreeWindowPicker", { fg = p.fg, bg = p.accent3 })
-  hl("NvimTreeSymlink", { fg = p.accent3 })
-  hl("NvimTreeExecFile", { fg = p.success, bold = true })
-  hl("NvimTreeBookmark", { fg = p.accent5 })
-
-  -- ==========================================================================
   -- Plugin: Bufferline (~50 groups)
   -- ==========================================================================
   local bl_bg = p.bg_dark
@@ -511,55 +465,41 @@ return function(p)
   hl("WhichKeyNormal", { fg = p.fg, bg = p.bg_alt })
 
   -- ==========================================================================
-  -- Plugin: CMP (Completion) (~25 groups)
+  -- Plugin: blink.cmp (completion)
   -- ==========================================================================
-  hl("CmpItemAbbr", { fg = p.fg })
-  hl("CmpItemAbbrDeprecated", { fg = p.fg_muted, strikethrough = true })
-  hl("CmpItemAbbrMatch", { fg = p.accent1, bold = true })
-  hl("CmpItemAbbrMatchFuzzy", { fg = p.accent1 })
-  hl("CmpItemKind", { fg = p.fg_dim })
-  hl("CmpItemMenu", { fg = p.fg_muted })
+  hl("BlinkCmpLabel", { fg = p.fg })
+  hl("BlinkCmpLabelDeprecated", { fg = p.fg_muted, strikethrough = true })
+  hl("BlinkCmpLabelMatch", { fg = p.accent1, bold = true })
+  hl("BlinkCmpKind", { fg = p.fg_dim })
+  hl("BlinkCmpSource", { fg = p.fg_muted })
+  hl("BlinkCmpLabelDetail", { fg = p.fg_muted })
+  hl("BlinkCmpLabelDescription", { fg = p.fg_muted })
 
-  hl("CmpItemKindText", { fg = p.fg })
-  hl("CmpItemKindMethod", { fg = p.accent3 })
-  hl("CmpItemKindFunction", { fg = p.accent3 })
-  hl("CmpItemKindConstructor", { fg = p.accent2 })
-  hl("CmpItemKindField", { fg = p.fg })
-  hl("CmpItemKindVariable", { fg = p.fg })
-  hl("CmpItemKindClass", { fg = p.accent2 })
-  hl("CmpItemKindInterface", { fg = p.accent2 })
-  hl("CmpItemKindModule", { fg = p.fg_dim })
-  hl("CmpItemKindProperty", { fg = p.fg })
-  hl("CmpItemKindUnit", { fg = p.accent1 })
-  hl("CmpItemKindValue", { fg = p.accent1 })
-  hl("CmpItemKindEnum", { fg = p.accent2 })
-  hl("CmpItemKindKeyword", { fg = p.accent4 })
-  hl("CmpItemKindSnippet", { fg = p.accent5 })
-  hl("CmpItemKindColor", { fg = p.accent5 })
-  hl("CmpItemKindFile", { fg = p.fg })
-  hl("CmpItemKindReference", { fg = p.accent5 })
-  hl("CmpItemKindFolder", { fg = p.accent3 })
-  hl("CmpItemKindEnumMember", { fg = p.accent1 })
-  hl("CmpItemKindConstant", { fg = p.accent1 })
-  hl("CmpItemKindStruct", { fg = p.accent2 })
-  hl("CmpItemKindEvent", { fg = p.accent5 })
-  hl("CmpItemKindOperator", { fg = p.fg_dim })
-  hl("CmpItemKindTypeParameter", { fg = p.accent2 })
-  hl("CmpItemKindCopilot", { fg = p.success })
-
-  -- ==========================================================================
-  -- Plugin: Indent Blankline
-  -- ==========================================================================
-  hl("IblIndent", { fg = p.fg_muted })
-  hl("IblScope", { fg = p.border })
-  hl("IblWhitespace", { fg = p.fg_muted })
-
-  -- ==========================================================================
-  -- Plugin: Illuminate (word highlight)
-  -- ==========================================================================
-  hl("IlluminatedWordText", { bg = p.bg_highlight })
-  hl("IlluminatedWordRead", { bg = p.bg_highlight })
-  hl("IlluminatedWordWrite", { bg = p.bg_highlight })
+  hl("BlinkCmpKindText", { fg = p.fg })
+  hl("BlinkCmpKindMethod", { fg = p.accent3 })
+  hl("BlinkCmpKindFunction", { fg = p.accent3 })
+  hl("BlinkCmpKindConstructor", { fg = p.accent2 })
+  hl("BlinkCmpKindField", { fg = p.fg })
+  hl("BlinkCmpKindVariable", { fg = p.fg })
+  hl("BlinkCmpKindClass", { fg = p.accent2 })
+  hl("BlinkCmpKindInterface", { fg = p.accent2 })
+  hl("BlinkCmpKindModule", { fg = p.fg_dim })
+  hl("BlinkCmpKindProperty", { fg = p.fg })
+  hl("BlinkCmpKindUnit", { fg = p.accent1 })
+  hl("BlinkCmpKindValue", { fg = p.accent1 })
+  hl("BlinkCmpKindEnum", { fg = p.accent2 })
+  hl("BlinkCmpKindKeyword", { fg = p.accent4 })
+  hl("BlinkCmpKindSnippet", { fg = p.accent5 })
+  hl("BlinkCmpKindColor", { fg = p.accent5 })
+  hl("BlinkCmpKindFile", { fg = p.fg })
+  hl("BlinkCmpKindReference", { fg = p.accent5 })
+  hl("BlinkCmpKindFolder", { fg = p.accent3 })
+  hl("BlinkCmpKindEnumMember", { fg = p.accent1 })
+  hl("BlinkCmpKindConstant", { fg = p.accent1 })
+  hl("BlinkCmpKindStruct", { fg = p.accent2 })
+  hl("BlinkCmpKindEvent", { fg = p.accent5 })
+  hl("BlinkCmpKindOperator", { fg = p.fg_dim })
+  hl("BlinkCmpKindTypeParameter", { fg = p.accent2 })
 
   -- ==========================================================================
   -- Plugin: Todo Comments
@@ -668,38 +608,6 @@ return function(p)
   hl("TroubleIndentWs", { fg = p.fg_muted })
 
   -- ==========================================================================
-  -- Plugin: nvim-navic (breadcrumb navigation)
-  -- ==========================================================================
-  hl("NavicIconsFile", { fg = p.fg })
-  hl("NavicIconsModule", { fg = p.accent4 })
-  hl("NavicIconsNamespace", { fg = p.accent4 })
-  hl("NavicIconsPackage", { fg = p.accent4 })
-  hl("NavicIconsClass", { fg = p.accent2 })
-  hl("NavicIconsMethod", { fg = p.accent3 })
-  hl("NavicIconsProperty", { fg = p.accent1 })
-  hl("NavicIconsField", { fg = p.accent1 })
-  hl("NavicIconsConstructor", { fg = p.accent3 })
-  hl("NavicIconsEnum", { fg = p.accent2 })
-  hl("NavicIconsInterface", { fg = p.accent2 })
-  hl("NavicIconsFunction", { fg = p.accent3 })
-  hl("NavicIconsVariable", { fg = p.accent1 })
-  hl("NavicIconsConstant", { fg = p.accent1 })
-  hl("NavicIconsString", { fg = p.accent1 })
-  hl("NavicIconsNumber", { fg = p.accent5 })
-  hl("NavicIconsBoolean", { fg = p.accent5 })
-  hl("NavicIconsArray", { fg = p.accent4 })
-  hl("NavicIconsObject", { fg = p.accent4 })
-  hl("NavicIconsKey", { fg = p.accent4 })
-  hl("NavicIconsNull", { fg = p.fg_muted })
-  hl("NavicIconsEnumMember", { fg = p.accent1 })
-  hl("NavicIconsStruct", { fg = p.accent2 })
-  hl("NavicIconsEvent", { fg = p.accent5 })
-  hl("NavicIconsOperator", { fg = p.fg })
-  hl("NavicIconsTypeParameter", { fg = p.accent2 })
-  hl("NavicText", { fg = p.fg })
-  hl("NavicSeparator", { fg = p.fg_muted })
-
-  -- ==========================================================================
   -- Plugin: DAP (Debug Adapter Protocol)
   -- ==========================================================================
   hl("DapBreakpoint", { fg = p.error })
@@ -791,58 +699,33 @@ return function(p)
   hl("RenderMarkdownTableFill", { fg = p.fg_muted })
 
   -- ==========================================================================
-  -- Plugin: Neominimap
+  -- Plugin: snacks.nvim (picker, explorer, indent, words, zen, dashboard)
   -- ==========================================================================
-  hl("NeominimapBackground", { bg = p.bg_dark })
-  hl("NeominimapBorder", { fg = p.border })
-  hl("NeominimapCursorLine", { bg = p.bg_highlight })
-  hl("NeominimapCursorLineSign", { fg = p.accent3 })
-  hl("NeominimapCursorLineNr", { fg = p.fg })
-
-  -- ==========================================================================
-  -- Plugin: snacks.nvim (notifier, indent, words, zen, dashboard)
-  -- ==========================================================================
-  -- Notifier (replaces nvim-notify, uses same highlight names for compatibility)
-  hl("NotifyERRORBorder", { fg = p.error })
-  hl("NotifyWARNBorder", { fg = p.warning })
-  hl("NotifyINFOBorder", { fg = p.info })
-  hl("NotifyDEBUGBorder", { fg = p.fg_muted })
-  hl("NotifyTRACEBorder", { fg = p.accent5 })
-  hl("NotifyERRORIcon", { fg = p.error })
-  hl("NotifyWARNIcon", { fg = p.warning })
-  hl("NotifyINFOIcon", { fg = p.info })
-  hl("NotifyDEBUGIcon", { fg = p.fg_muted })
-  hl("NotifyTRACEIcon", { fg = p.accent5 })
-  hl("NotifyERRORTitle", { fg = p.error })
-  hl("NotifyWARNTitle", { fg = p.warning })
-  hl("NotifyINFOTitle", { fg = p.info })
-  hl("NotifyDEBUGTitle", { fg = p.fg_muted })
-  hl("NotifyTRACETitle", { fg = p.accent5 })
-  hl("NotifyERRORBody", { fg = p.fg })
-  hl("NotifyWARNBody", { fg = p.fg })
-  hl("NotifyINFOBody", { fg = p.fg })
-  hl("NotifyDEBUGBody", { fg = p.fg })
-  hl("NotifyTRACEBody", { fg = p.fg })
-  -- Snacks-specific notifier highlights
-  hl("SnacksNotifierInfo", { fg = p.info })
-  hl("SnacksNotifierWarn", { fg = p.warning })
-  hl("SnacksNotifierError", { fg = p.error })
-  hl("SnacksNotifierDebug", { fg = p.fg_muted })
-  hl("SnacksNotifierTrace", { fg = p.accent5 })
-  hl("SnacksNotifierIconInfo", { fg = p.info })
-  hl("SnacksNotifierIconWarn", { fg = p.warning })
-  hl("SnacksNotifierIconError", { fg = p.error })
-  hl("SnacksNotifierIconDebug", { fg = p.fg_muted })
-  hl("SnacksNotifierIconTrace", { fg = p.accent5 })
-  hl("SnacksNotifierTitleInfo", { fg = p.info, bold = true })
-  hl("SnacksNotifierTitleWarn", { fg = p.warning, bold = true })
-  hl("SnacksNotifierTitleError", { fg = p.error, bold = true })
-  hl("SnacksNotifierTitleDebug", { fg = p.fg_muted, bold = true })
-  hl("SnacksNotifierTitleTrace", { fg = p.accent5, bold = true })
-  -- Indent guides (replaces indent-blankline)
+  -- Picker and explorer
+  hl("SnacksPicker", { fg = p.fg, bg = p.bg })
+  hl("SnacksPickerBorder", { fg = p.border, bg = p.bg })
+  hl("SnacksPickerTitle", { fg = p.fg, bg = p.bg, bold = true })
+  hl("SnacksPickerInput", { fg = p.fg, bg = p.bg_alt })
+  hl("SnacksPickerInputBorder", { fg = p.border, bg = p.bg_alt })
+  hl("SnacksPickerPrompt", { fg = p.accent3 })
+  hl("SnacksPickerListCursorLine", { bg = p.bg_highlight })
+  hl("SnacksPickerMatch", { fg = p.accent1, bold = true })
+  hl("SnacksPickerSelected", { fg = p.accent5 })
+  hl("SnacksPickerDir", { fg = p.fg_dim })
+  hl("SnacksPickerDirectory", { fg = p.accent3 })
+  hl("SnacksPickerPathHidden", { fg = p.fg_muted })
+  hl("SnacksPickerPathIgnored", { fg = p.fg_muted, italic = true })
+  hl("SnacksPickerTree", { fg = p.fg_muted })
+  hl("SnacksPickerGitStatusAdded", { fg = p.success })
+  hl("SnacksPickerGitStatusModified", { fg = p.warning })
+  hl("SnacksPickerGitStatusDeleted", { fg = p.error })
+  hl("SnacksPickerGitStatusUntracked", { fg = p.accent5 })
+  hl("SnacksPickerGitStatusStaged", { fg = p.success })
+  hl("SnacksPickerGitStatusUnmerged", { fg = p.error })
+  -- Indent guides
   hl("SnacksIndent", { fg = p.bg_highlight })
   hl("SnacksIndentScope", { fg = p.accent3 })
-  -- Word highlighting (replaces vim-illuminate, uses LSP document highlights)
+  -- Word highlighting (LSP document highlights)
   hl("SnacksWordsReference", { bg = p.bg_highlight })
   hl("SnacksWordsReferenceRead", { bg = p.bg_highlight })
   hl("SnacksWordsReferenceWrite", { bg = p.bg_highlight, underline = true })
@@ -855,9 +738,9 @@ return function(p)
   hl("SnacksDashboardFile", { fg = p.fg })
   hl("SnacksDashboardDir", { fg = p.fg_muted })
   hl("SnacksDashboardSpecial", { fg = p.accent1 })
-  -- Zen mode (replaces zen-mode.nvim)
+  -- Zen mode
   hl("SnacksZen", { bg = p.bg })
-  -- Dim mode (replaces twilight.nvim)
+  -- Dim mode
   hl("SnacksDim", { fg = p.fg_muted })
 
   -- ==========================================================================
@@ -867,16 +750,6 @@ return function(p)
   hl("NvimDapVirtualTextChanged", { fg = p.warning, italic = true })
   hl("NvimDapVirtualTextError", { fg = p.error, italic = true })
   hl("NvimDapVirtualTextInfo", { fg = p.info, italic = true })
-
-  -- ==========================================================================
-  -- Plugin: vim-illuminate (deprecated, kept for compatibility)
-  -- Replaced by snacks.words (see SnacksWords* above)
-  -- ==========================================================================
-  hl("IlluminatedWord", { bg = p.bg_highlight })
-  hl("IlluminatedCurWord", { bg = p.bg_highlight })
-  hl("IlluminatedWordText", { bg = p.bg_highlight })
-  hl("IlluminatedWordRead", { bg = p.bg_highlight })
-  hl("IlluminatedWordWrite", { bg = p.bg_highlight })
 
   -- ==========================================================================
   -- Plugin: gitsigns (additional groups)
@@ -893,14 +766,6 @@ return function(p)
   hl("NvimSurroundHighlight", { fg = p.bg, bg = p.accent5 })
 
   -- ==========================================================================
-  -- Plugin: leap.nvim / flash.nvim extras
-  -- ==========================================================================
-  hl("LeapMatch", { fg = p.fg, bg = p.match, bold = true })
-  hl("LeapLabelPrimary", { fg = p.bg, bg = p.accent5, bold = true })
-  hl("LeapLabelSecondary", { fg = p.bg, bg = p.accent3, bold = true })
-  hl("LeapBackdrop", { fg = p.fg_muted })
-
-  -- ==========================================================================
   -- Plugin: grug-far.nvim
   -- ==========================================================================
   hl("GrugFarHelpHeader", { fg = p.fg, bold = true })
@@ -914,79 +779,6 @@ return function(p)
   hl("GrugFarResultsPath", { fg = p.accent3, underline = true })
   hl("GrugFarResultsLineNr", { fg = p.fg_muted })
   hl("GrugFarResultsActionMessage", { fg = p.accent1 })
-
-  -- ==========================================================================
-  -- Plugin: zen-mode.nvim / twilight.nvim (deprecated, kept for compatibility)
-  -- Replaced by snacks.zen / snacks.dim (see SnacksZen/SnacksDim above)
-  -- ==========================================================================
-  hl("ZenBg", { bg = p.bg })
-  hl("TwilightDimmed", { fg = p.fg_muted })
-
-  -- ==========================================================================
-  -- Plugin: neo-tree
-  -- ==========================================================================
-  hl("NeoTreeNormal", { fg = p.fg, bg = p.bg })
-  hl("NeoTreeNormalNC", { fg = p.fg_dim, bg = p.bg })
-  hl("NeoTreeDirectoryName", { fg = p.fg })
-  hl("NeoTreeDirectoryIcon", { fg = p.accent3 })
-  hl("NeoTreeRootName", { fg = p.fg_dim, bold = true })
-  hl("NeoTreeFileName", { fg = p.fg })
-  hl("NeoTreeFileIcon", { fg = p.fg })
-  hl("NeoTreeFileNameOpened", { fg = p.fg, bold = true })
-  hl("NeoTreeIndentMarker", { fg = p.fg_muted })
-  hl("NeoTreeGitAdded", { fg = p.success })
-  hl("NeoTreeGitDeleted", { fg = p.error })
-  hl("NeoTreeGitModified", { fg = p.warning })
-  hl("NeoTreeGitConflict", { fg = p.error, bold = true })
-  hl("NeoTreeGitUntracked", { fg = p.fg_muted })
-  hl("NeoTreeGitIgnored", { fg = p.fg_muted })
-  hl("NeoTreeGitStaged", { fg = p.success })
-  hl("NeoTreeFloatBorder", { fg = p.border })
-  hl("NeoTreeFloatTitle", { fg = p.fg, bold = true })
-  hl("NeoTreeCursorLine", { bg = p.bg_highlight })
-  hl("NeoTreeDimText", { fg = p.fg_muted })
-  hl("NeoTreeDotfile", { fg = p.fg_muted })
-  hl("NeoTreeSymbolicLinkTarget", { fg = p.accent3 })
-  hl("NeoTreeTitleBar", { fg = p.fg, bg = p.bg_alt, bold = true })
-  hl("NeoTreeWinSeparator", { fg = p.border })
-
-  -- ==========================================================================
-  -- Plugin: mini.nvim
-  -- ==========================================================================
-  hl("MiniIndentscopeSymbol", { fg = p.border })
-  hl("MiniIndentscopePrefix", { fg = p.border })
-
-  hl("MiniJump", { fg = p.bg, bg = p.accent5, bold = true })
-  hl("MiniJump2dSpot", { fg = p.accent5, bold = true })
-  hl("MiniJump2dSpotAhead", { fg = p.accent3 })
-  hl("MiniJump2dSpotUnique", { fg = p.warning })
-
-  hl("MiniStatuslineDevinfo", { fg = p.fg, bg = p.bg_alt })
-  hl("MiniStatuslineFileinfo", { fg = p.fg, bg = p.bg_alt })
-  hl("MiniStatuslineFilename", { fg = p.fg_dim, bg = p.bg_dark })
-  hl("MiniStatuslineInactive", { fg = p.fg_muted, bg = p.bg_dark })
-  hl("MiniStatuslineModeCommand", { fg = p.bg, bg = p.warning, bold = true })
-  hl("MiniStatuslineModeInsert", { fg = p.bg, bg = p.success, bold = true })
-  hl("MiniStatuslineModeNormal", { fg = p.bg, bg = p.accent3, bold = true })
-  hl("MiniStatuslineModeOther", { fg = p.bg, bg = p.accent5, bold = true })
-  hl("MiniStatuslineModeReplace", { fg = p.bg, bg = p.error, bold = true })
-  hl("MiniStatuslineModeVisual", { fg = p.bg, bg = p.accent5, bold = true })
-
-  hl("MiniSurround", { fg = p.bg, bg = p.accent5 })
-  hl("MiniTablineCurrent", { fg = p.fg, bg = p.bg, bold = true })
-  hl("MiniTablineFill", { bg = p.bg_dark })
-  hl("MiniTablineHidden", { fg = p.fg_muted, bg = p.bg_dark })
-  hl("MiniTablineModifiedCurrent", { fg = p.warning, bg = p.bg, bold = true })
-  hl("MiniTablineModifiedHidden", { fg = p.warning, bg = p.bg_dark })
-  hl("MiniTablineModifiedVisible", { fg = p.warning, bg = p.bg_alt })
-  hl("MiniTablineTabpagesection", { fg = p.fg, bg = p.bg_alt })
-  hl("MiniTablineVisible", { fg = p.fg_dim, bg = p.bg_alt })
-
-  hl("MiniTestEmphasis", { bold = true })
-  hl("MiniTestFail", { fg = p.error, bold = true })
-  hl("MiniTestPass", { fg = p.success, bold = true })
-
-  hl("MiniTrailspace", { bg = p.error })
 
   -- ==========================================================================
   -- Plugin: neotest
@@ -1008,12 +800,6 @@ return function(p)
   hl("NeotestUnknown", { fg = p.fg_muted })
   hl("NeotestWatching", { fg = p.warning })
   hl("NeotestFocused", { bold = true, underline = true })
-
-  -- ==========================================================================
-  -- Plugin: copilot
-  -- ==========================================================================
-  hl("CopilotSuggestion", { fg = p.fg_muted, italic = true })
-  hl("CopilotAnnotation", { fg = p.fg_muted, italic = true })
 
   -- ==========================================================================
   -- Misc / Built-in

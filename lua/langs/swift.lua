@@ -7,7 +7,7 @@ return {
   description = "sourcekit-lsp (Xcode), swiftformat|swift format, swiftlint, lldb-dap, xcodebuild.nvim",
   filetypes = { "swift", "objc", "objcpp" },
   grep_type = "swift",
-  parsers = { "swift" },
+  parsers = { "swift", "objc" },
   servers = function()
     local xcrun = vim.fn.executable "xcrun" == 1
     return {
@@ -65,15 +65,21 @@ return {
       opts = {},
     },
   },
-  keys = {
-    { "<leader>X", group = "Xcode", icon = "" },
-    { "<leader>XX", "<cmd>XcodebuildPicker<cr>", desc = "Xcode: Actions" },
-    { "<leader>Xb", "<cmd>XcodebuildBuild<cr>", desc = "Xcode: Build" },
-    { "<leader>Xr", "<cmd>XcodebuildBuildRun<cr>", desc = "Xcode: Build & run" },
-    { "<leader>Xt", "<cmd>XcodebuildTest<cr>", desc = "Xcode: Test" },
-    { "<leader>XT", "<cmd>XcodebuildTestExplorerToggle<cr>", desc = "Xcode: Test explorer" },
-    { "<leader>Xd", "<cmd>XcodebuildSelectDevice<cr>", desc = "Xcode: Select device" },
-    { "<leader>Xl", "<cmd>XcodebuildToggleLogs<cr>", desc = "Xcode: Toggle logs" },
-    { "<leader>Xp", "<cmd>XcodebuildPreviewToggle<cr>", desc = "Xcode: Toggle preview" },
-  },
+  -- xcodebuild.nvim only loads on macOS; its keys follow.
+  keys = function()
+    if vim.fn.has "mac" == 0 then
+      return {}
+    end
+    return {
+      { "<leader>X", group = "Xcode", icon = "" },
+      { "<leader>XX", "<cmd>XcodebuildPicker<cr>", desc = "Xcode: Actions" },
+      { "<leader>Xb", "<cmd>XcodebuildBuild<cr>", desc = "Xcode: Build" },
+      { "<leader>Xr", "<cmd>XcodebuildBuildRun<cr>", desc = "Xcode: Build & run" },
+      { "<leader>Xt", "<cmd>XcodebuildTest<cr>", desc = "Xcode: Test" },
+      { "<leader>XT", "<cmd>XcodebuildTestExplorerToggle<cr>", desc = "Xcode: Test explorer" },
+      { "<leader>Xd", "<cmd>XcodebuildSelectDevice<cr>", desc = "Xcode: Select device" },
+      { "<leader>Xl", "<cmd>XcodebuildToggleLogs<cr>", desc = "Xcode: Toggle logs" },
+      { "<leader>Xp", "<cmd>XcodebuildPreviewToggle<cr>", desc = "Xcode: Toggle preview" },
+    }
+  end,
 }

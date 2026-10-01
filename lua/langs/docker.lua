@@ -13,6 +13,11 @@ return {
       ["docker-compose.yaml"] = "yaml.docker-compose",
       ["docker-compose.yml"] = "yaml.docker-compose",
     },
+    pattern = {
+      -- docker-compose.override.yml, compose.prod.yaml, ...
+      ["docker%-compose%..+%.ya?ml"] = "yaml.docker-compose",
+      ["compose%..+%.ya?ml"] = "yaml.docker-compose",
+    },
   },
   parsers = { "dockerfile", "yaml" },
   servers = {

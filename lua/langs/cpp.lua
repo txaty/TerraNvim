@@ -11,7 +11,7 @@ return {
       desc = "clangd --query-driver globs for cross compilers, e.g. /opt/homebrew/bin/arm-none-eabi-*",
     },
   },
-  parsers = { "c", "cpp", "cmake", "make" },
+  parsers = { "c", "cpp", "cuda", "cmake", "make" },
   servers = function(o)
     local cmd = {
       "clangd",
@@ -28,7 +28,9 @@ return {
       cmd[#cmd + 1] = "--query-driver=" .. o.query_driver
     end
     return {
-      clangd = { mason = "clangd", cmd = cmd },
+      -- Not objc/objcpp: the swift pack serves those with sourcekit-lsp, and
+      -- two servers per buffer means duplicate diagnostics and completion.
+      clangd = { mason = "clangd", cmd = cmd, filetypes = { "c", "cpp", "cuda" } },
       neocmake = { mason = "neocmakelsp" },
     }
   end,
@@ -58,7 +60,7 @@ return {
         -- :2331, QEMU -s :1234) with the firmware ELF for symbols.
         name = "Remote GDB server (OpenOCD / J-Link / QEMU)",
         type = "codelldb",
-        request = "custom",
+        request = "launch", -- "custom" is deprecated in codelldb; same behaviour
         targetCreateCommands = function()
           return { "target create " .. vim.fn.input("Firmware ELF: ", vim.fn.getcwd() .. "/", "file") }
         end,

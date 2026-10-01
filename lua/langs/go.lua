@@ -4,7 +4,7 @@ return {
   description = "gopls, goimports+gofumpt, golangci-lint, delve, neotest-golang",
   filetypes = { "go", "gomod", "gowork", "gosum", "gotmpl" },
   grep_type = "go",
-  parsers = { "go", "gomod", "gowork", "gosum" },
+  parsers = { "go", "gomod", "gowork", "gosum", "gotmpl" },
   servers = {
     gopls = {
       mason = "gopls",
@@ -15,7 +15,7 @@ return {
           completeUnimported = true,
           staticcheck = true,
           semanticTokens = true,
-          analyses = { unusedparams = true, unusedwrite = true, nilness = true, useany = true },
+          analyses = { unusedparams = true, unusedwrite = true, nilness = true },
           hints = {
             assignVariableTypes = true,
             compositeLiteralFields = true,
@@ -46,7 +46,7 @@ return {
         name = "Debug test (package)",
         request = "launch",
         mode = "test",
-        program = "./${relativeFileDirname}",
+        program = "${fileDirname}",
       },
       {
         type = "delve",

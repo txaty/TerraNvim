@@ -8,8 +8,8 @@ return {
     server = { default = "basedpyright", choices = { "basedpyright", "pyright" }, desc = "Type-checking server" },
     type_checking = {
       default = "standard",
-      choices = { "off", "basic", "standard", "strict" },
-      desc = "typeCheckingMode",
+      choices = { "off", "basic", "standard", "strict", "recommended", "all" },
+      desc = "typeCheckingMode (recommended/all: basedpyright only)",
     },
   },
   parsers = { "python" },
@@ -52,6 +52,9 @@ return {
     { "nvim-neotest/neotest-python", lazy = true },
     {
       "linux-cultist/venv-selector.nvim",
+      -- On ft as well: setup() installs the autocmd that re-activates the
+      -- cached venv, or the type checker uses the wrong interpreter.
+      ft = "python",
       cmd = "VenvSelect",
       opts = { options = { picker = "snacks" } },
     },

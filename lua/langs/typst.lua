@@ -13,7 +13,9 @@ return {
       "chomosuke/typst-preview.nvim",
       version = "1.*",
       cmd = { "TypstPreview", "TypstPreviewToggle", "TypstPreviewUpdate" },
-      opts = {},
+      -- Use Mason's tinymist instead of downloading its own (older) copy.
+      -- websocat is still downloaded on first preview (not in Mason).
+      opts = { dependencies_bin = { tinymist = "tinymist" } },
     },
   },
   keys = {

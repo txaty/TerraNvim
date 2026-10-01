@@ -10,7 +10,8 @@
 --     (.cjs configs), solhint (plugins), the workspace TypeScript SDK.
 -- Trusting a project (:TrustProject) allows them. Language toolchains that
 -- build the project (cargo/rust-analyzer build scripts and proc macros,
--- SwiftPM manifests, go) are not gated: enabling those packs means building.
+-- SwiftPM manifests, go, kotlin-lsp's Gradle/Maven import) are not gated:
+-- enabling those packs means building.
 --
 -- Trust is stored in Neovim's own trust database (:trust, vim.secure), read
 -- here without prompting: a project is trusted when it, or a parent

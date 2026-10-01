@@ -32,10 +32,14 @@ end
 ---@param name string
 ---@param enabled boolean
 local function set(name, enabled)
+  local changed
   if enabled then
-    lang().enable(name)
+    changed = lang().enable(name)
   else
-    lang().disable(name)
+    changed = lang().disable(name)
+  end
+  if not changed then
+    return
   end
   local title = lang().get(name).title or name
   vim.notify(("%s %s support %s"):format(enabled and "+" or "-", title, enabled and "enabled" or "disabled"))
@@ -92,7 +96,13 @@ function M.register()
 
   vim.api.nvim_create_user_command("LangInstall", function(o)
     local list = #o.fargs > 0 and known(o.fargs) or lang().enabled()
-    require("core.lang.install").ensure(list, { sync = o.bang })
+    -- Explicit request: also retry parsers whose build failed earlier.
+    local failed = require("core.lang.install").ensure(list, { sync = o.bang, force = true })
+    -- Headless bootstrap (CI): a non-zero exit when something is still missing.
+    if o.bang and (failed or 0) > 0 and #vim.api.nvim_list_uis() == 0 then
+      io.stderr:write(("LangInstall: %d tools/parsers missing; see :checkhealth core.lang\n"):format(failed))
+      vim.cmd "cquit 1"
+    end
   end, {
     nargs = "*",
     bang = true,
@@ -112,7 +122,9 @@ function M.register()
       return
     end
     local value = raw
-    if raw == "true" or raw == "false" then
+    if raw == '""' or raw == "''" then
+      value = ""
+    elseif raw == "true" or raw == "false" then
       value = raw == "true"
     elseif tonumber(raw) then
       value = tonumber(raw)
@@ -122,6 +134,10 @@ function M.register()
         ("%s.%s must be one of: %s"):format(name, option, table.concat(spec.choices, ", ")),
         vim.log.levels.ERROR
       )
+      return
+    end
+    if require("core.lang.state").overridden() then
+      vim.notify("$NVIM_LANGS is set: language pack settings are not saved this session", vim.log.levels.WARN)
       return
     end
     require("core.lang.state").set_option(name, option, value)

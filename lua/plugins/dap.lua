@@ -137,12 +137,7 @@ return {
       -- are registered here, when nvim-dap loads, so they exist for every
       -- buffer (previously a FileType `once` autocmd created after nvim-dap
       -- loaded missed the buffers that were already open).
-      for _, entry in ipairs(require("core.lang").collect.dap()) do
-        local ok, err = pcall(entry.fn, dap, require("core.lang").opts(entry.pack))
-        if not ok then
-          vim.notify(("DAP setup for %s failed: %s"):format(entry.pack, err), vim.log.levels.WARN)
-        end
-      end
+      require("core.lang").apply_dap(dap)
     end,
   },
   {

@@ -49,8 +49,10 @@ local function to_config(spec)
   return cfg
 end
 
+---Decide whether a configured server can start now; returns true if so.
 ---@param name string
 ---@param spec table
+---@return boolean? start
 local function enable(name, spec)
   local cfg = vim.lsp.config[name]
   if not cfg then
@@ -64,8 +66,8 @@ local function enable(name, spec)
     return
   end
   if runnable(cfg, spec) then
-    vim.lsp.enable(name)
     status[name] = "enabled"
+    return true
   elseif type(spec.mason) == "string" then
     -- Enabled by on_installed() once core.lang.install finishes the package.
     pending[spec.mason] = pending[spec.mason] or {}
@@ -80,17 +82,23 @@ end
 ---@param list? string[] pack names; default: all enabled packs
 function M.configure(list)
   local auto_start = require("core.settings").get "lsp.auto_start"
+  local start = {}
   for name, entry in pairs(lang.collect.servers(list)) do
     if entry.spec.managed_by then
       status[name] = "managed"
     else
       vim.lsp.config(name, to_config(entry.spec))
-      if auto_start then
-        enable(name, entry.spec)
-      else
+      if not auto_start then
         status[name] = "disabled"
+      elseif enable(name, entry.spec) then
+        start[#start + 1] = name
       end
     end
+  end
+  -- One call: after VimEnter every vim.lsp.enable() re-runs FileType handling
+  -- for all loaded buffers, so enabling servers one by one multiplies that.
+  if #start > 0 then
+    vim.lsp.enable(start)
   end
 end
 
@@ -118,8 +126,11 @@ end
 ---@param pkg string
 function M.on_installed(pkg)
   for _, name in ipairs(pending[pkg] or {}) do
-    vim.lsp.enable(name)
-    status[name] = "enabled"
+    -- Still pending: the pack may have been disabled while it installed.
+    if status[name] == "pending" then
+      vim.lsp.enable(name)
+      status[name] = "enabled"
+    end
   end
   pending[pkg] = nil
 end

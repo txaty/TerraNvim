@@ -49,8 +49,14 @@ local function apply_pack(buf, name)
   local pack = lang.get(name)
 
   local options = (lang.field(name, "ft_options") or {})[ft]
-  for option, value in pairs(options or {}) do
-    vim.opt_local[option] = value
+  if options then
+    -- opt_local acts on the current window; buf need not be current (e.g.
+    -- :LangEnable from the panel), so run in a window showing it.
+    vim.api.nvim_buf_call(buf, function()
+      for option, value in pairs(options) do
+        vim.opt_local[option] = value
+      end
+    end)
   end
   -- A pack that forces wrap (prose) wins over the global wrap toggle, which
   -- core.ui_toggle re-applies on BufWinEnter.
@@ -102,11 +108,30 @@ local function contributors(ft)
   return out
 end
 
+---Undo what earlier FileType events applied to buf (keymaps, prose wrap), so
+---a filetype change (:setlocal ft=...) does not keep the old pack's keys.
+---@param buf integer
+---@param pack? string only this pack's keymaps
+local function clear(buf, pack)
+  local maps = applied[buf] or {}
+  for i = #maps, 1, -1 do
+    local map = maps[i]
+    if not pack or map.pack == pack then
+      pcall(vim.keymap.del, map.mode, map.lhs, { buffer = buf })
+      table.remove(maps, i)
+    end
+  end
+  if not pack and vim.api.nvim_buf_is_valid(buf) then
+    vim.b[buf].prose_wrap = nil
+  end
+end
+
 ---@param buf integer
 local function on_filetype(buf)
   if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "" then
     return
   end
+  clear(buf)
   local ft = vim.bo[buf].filetype
   local owner = lang.owner(ft)
 
@@ -164,6 +189,20 @@ end
 ---@param name string
 function M.activate(name)
   local list = { name }
+  local pack = lang.get(name)
+  -- Filetype detection added by the pack (e.g. compose files): register it and
+  -- re-detect open buffers that now belong to the pack.
+  if pack.filetype_add then
+    vim.filetype.add(pack.filetype_add)
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" then
+        local ft = vim.filetype.match { buf = buf }
+        if ft and ft ~= vim.bo[buf].filetype and lang.owner(ft) == name then
+          vim.bo[buf].filetype = ft
+        end
+      end
+    end
+  end
   local lsp = require "core.lang.lsp"
   if lsp.ready then -- otherwise nvim-lspconfig's config() picks the pack up when it loads
     lsp.configure(list)
@@ -177,17 +216,14 @@ function M.activate(name)
     require("core.lang.lint").apply(list)
   end
   if package.loaded.dap then
-    for _, entry in ipairs(lang.collect.dap(list)) do
-      pcall(entry.fn, require "dap", lang.opts(entry.pack))
-    end
+    lang.apply_dap(require "dap", list)
   end
+  -- on_filetype() also triggers the (install.auto-gated) first-use install.
   for _, buf in ipairs(owned_buffers(name)) do
     on_filetype(buf)
     require("core.lang.treesitter").attach(buf)
   end
-  require("core.lang.install").ensure(list)
 
-  local pack = lang.get(name)
   local needs_restart = pack.test ~= nil or pack.cmp ~= nil
   local plugins = require("lazy.core.config").plugins
   for _, spec in ipairs(pack.plugins or {}) do
@@ -218,14 +254,18 @@ function M.deactivate(name)
       lint.linters_by_ft[ft] = nil
     end
   end
-  for buf, maps in pairs(applied) do
-    for i = #maps, 1, -1 do
-      local map = maps[i]
-      if map.pack == name and vim.api.nvim_buf_is_valid(buf) then
-        pcall(vim.keymap.del, map.mode, map.lhs, { buffer = buf })
-        table.remove(maps, i)
-      end
-    end
+  for buf in pairs(applied) do
+    clear(buf, name)
+  end
+  -- Plugins stay loaded, plugin-managed servers (rustaceanvim) keep starting,
+  -- and neotest keeps its adapters until the next start.
+  local pack = lang.get(name)
+  local managed = false
+  for _, entry in pairs(lang.collect.servers(list)) do
+    managed = managed or entry.spec.managed_by ~= nil
+  end
+  if pack.plugins or pack.test or pack.cmp or managed then
+    require("core.restart").offer((pack.title or name) .. " removal")
   end
 end
 

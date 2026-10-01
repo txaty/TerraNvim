@@ -7,7 +7,8 @@ local M = {}
 M.base_parsers = { "c", "diff", "lua", "markdown", "markdown_inline", "query", "regex", "vim", "vimdoc" }
 
 ---@param buf integer
-function M.attach(buf)
+---@param opts? {install?: boolean} install = false: never start a parser install
+function M.attach(buf, opts)
   local ft = vim.bo[buf].filetype
   if ft == "" or vim.bo[buf].buftype ~= "" and vim.bo[buf].buftype ~= "help" then
     return
@@ -33,7 +34,7 @@ function M.attach(buf)
   local wanted = vim.tbl_contains(M.base_parsers, lang)
     or (owner and core_lang.is_enabled(owner) and vim.tbl_contains(core_lang.collect.parsers { owner }, lang))
   local install = require "core.lang.install"
-  if wanted and install.auto_allowed() then
+  if wanted and (not opts or opts.install ~= false) and install.auto_allowed() then
     install.parsers { lang }
   end
 end

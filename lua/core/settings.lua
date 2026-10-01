@@ -66,6 +66,20 @@ local function is_list(v)
   return type(v) == "table" and (vim.islist(v) or next(v) == nil)
 end
 
+---"list", "map", "table" (empty: either) or the Lua type.
+local function shape(v)
+  if type(v) ~= "table" or next(v) == nil then
+    return type(v)
+  end
+  return vim.islist(v) and "list" or "map"
+end
+
+---Does a user value fit where the default is?
+local function compatible(default, value)
+  local a, b = shape(default), shape(value)
+  return a == b or (type(default) == "table" and type(value) == "table" and (a == "table" or b == "table"))
+end
+
 ---Merge `src` into a copy of `dst`. Lists replace; maps merge recursively.
 ---@param dst table
 ---@param src table
@@ -79,6 +93,10 @@ local function merge(dst, src, path, unknown)
     if current == nil then
       unknown[#unknown + 1] = here
       result[key] = value
+    elseif not compatible(current, value) then
+      -- Wrong type (e.g. langs.default = "python"): keep the default rather
+      -- than let one typo stop the whole config from starting.
+      unknown[#unknown + 1] = here .. " (expected " .. (shape(current) == "list" and "a list" or type(current)) .. ")"
     elseif type(current) == "table" and not is_list(current) and type(value) == "table" then
       result[key] = merge(current, value, here, unknown)
     else
@@ -111,7 +129,7 @@ local function resolve()
   merged = merge(M.defaults, user_settings(), "", unknown)
   if #unknown > 0 then
     vim.schedule(function()
-      vim.notify("Unknown keys in lua/user/settings.lua: " .. table.concat(unknown, ", "), vim.log.levels.WARN)
+      vim.notify("Ignored in lua/user/settings.lua: " .. table.concat(unknown, ", "), vim.log.levels.WARN)
     end)
   end
   return merged

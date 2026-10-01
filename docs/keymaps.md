@@ -109,7 +109,7 @@ Always available:
 
 | Key | Action |
 |---|---|
-| `<leader>Lp` | Panel: `<CR>` toggle, `<C-i>` install tools, `<C-o>` options, `<C-r>` restart |
+| `<leader>Lp` | Panel: `<CR>` toggle, `<C-x>` install tools, `<C-o>` options, `<C-r>` restart |
 | `<leader>Ls` | Status of every pack |
 | `<leader>Li` | Install missing tools and parsers of enabled packs |
 | `<leader>Lh` | `:checkhealth core.lang` |

@@ -152,6 +152,6 @@ map("n", "<leader>Ls", function()
 end, { desc = "Language: Pack status" })
 map("n", "<leader>Li", function()
   local lang = require "core.lang"
-  require("core.lang.install").ensure(lang.enabled())
+  require("core.lang.install").ensure(lang.enabled(), { force = true })
 end, { desc = "Language: Install tools of enabled packs" })
 map("n", "<leader>Lh", "<cmd>checkhealth core.lang<cr>", { desc = "Language: Health" })

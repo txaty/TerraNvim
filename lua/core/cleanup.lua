@@ -231,30 +231,6 @@ function M.clean_sessions()
   return sweep_older_than(state_path .. "/sessions", config.session_max_age_days, "%.vim$")
 end
 
--- Clean orphaned directories (NvChad remnants, tmp dirs)
-function M.clean_orphaned_dirs()
-  local orphans = {
-    data_path .. "/base46",
-    data_path .. "/nvnotify",
-    data_path .. "/nvnotify1",
-    data_path .. "/tree-sitter-html-tmp",
-    data_path .. "/tree-sitter-solidity-tmp",
-    data_path .. "/tree-sitter-terraform-tmp",
-    data_path .. "/tree-sitter-tsx-tmp",
-  }
-  local cleaned = 0
-
-  for _, dir in ipairs(orphans) do
-    if vim.fn.isdirectory(dir) == 1 then
-      local ok = safe_delete(dir, data_path, "rf")
-      if ok then
-        cleaned = cleaned + 1
-      end
-    end
-  end
-  return cleaned
-end
-
 -- Clean LSP server logs
 function M.clean_lsp_logs()
   local mason_packages = data_path .. "/mason/packages"
@@ -337,7 +313,6 @@ function M.clean_all(verbose)
     lsp_logs = M.clean_lsp_logs(),
     undo = M.clean_undo(),
     sessions = M.clean_sessions(),
-    orphaned_dirs = M.clean_orphaned_dirs(),
   }
 
   local total = results.logs
@@ -347,7 +322,6 @@ function M.clean_all(verbose)
     + results.lsp_logs
     + results.undo
     + results.sessions
-    + results.orphaned_dirs
 
   if verbose then
     local msg = string.format(
@@ -359,7 +333,6 @@ function M.clean_all(verbose)
         .. "  - LSP logs: %d\n"
         .. "  - Undo files: %d\n"
         .. "  - Session files: %d\n"
-        .. "  - Orphaned dirs: %d\n"
         .. "  - Total: %d items removed",
       results.logs,
       results.swap,
@@ -368,7 +341,6 @@ function M.clean_all(verbose)
       results.lsp_logs,
       results.undo,
       results.sessions,
-      results.orphaned_dirs,
       total
     )
     if #cleanup_errors > 0 then

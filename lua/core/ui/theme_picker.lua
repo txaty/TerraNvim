@@ -4,13 +4,15 @@
 -- colors/* file and previews with a bare :colorscheme, skipping the registry's
 -- background/globals/setup). Moving the cursor previews without saving;
 -- <CR> applies and saves; closing any other way restores the previous theme.
--- Type "dark" or "light" to filter by variant.
+-- :ThemeSwitch dark / light lists one variant.
 local theme = require "core.theme"
 
 local M = {}
 
----@param filter? string initial pattern, e.g. "light"
+---@param filter? string "dark"/"light" lists only that variant; anything else
+---is used as the initial search pattern
 function M.open(filter)
+  local variant = (filter == "dark" or filter == "light") and filter or nil
   local original = theme.current() or theme.saved()
   local ok, Snacks = pcall(require, "snacks")
   if not ok then
@@ -23,7 +25,7 @@ function M.open(filter)
   end
 
   local items = {}
-  for _, name in ipairs(theme.names()) do
+  for _, name in ipairs(variant and theme.names_by_variant(variant) or theme.names()) do
     local info = theme.registry[name]
     local item = {
       name = name,
@@ -41,7 +43,7 @@ function M.open(filter)
   Snacks.picker.pick {
     title = "Themes",
     items = items,
-    pattern = filter,
+    pattern = not variant and filter or nil,
     layout = { preset = "vscode" },
     format = function(item)
       return {

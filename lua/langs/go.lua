@@ -62,7 +62,13 @@ return {
   test = {
     adapter = function()
       local runner = vim.fn.executable "gotestsum" == 1 and "gotestsum" or "go"
-      return require "neotest-golang" { runner = runner }
+      -- dap_mode "manual": debug tests with the pack's delve adapter instead of
+      -- the default, which needs nvim-dap-go.
+      return require "neotest-golang" {
+        runner = runner,
+        dap_mode = "manual",
+        dap_manual_config = { type = "delve", name = "Debug test", request = "launch", mode = "test" },
+      }
     end,
   },
   plugins = {

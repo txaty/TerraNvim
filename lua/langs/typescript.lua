@@ -33,7 +33,6 @@ return {
         mason = "vtsls",
         enabled = o.server == "vtsls",
         settings = {
-          complete_function_calls = true,
           vtsls = {
             enableMoveToFileCodeAction = true,
             -- The workspace TypeScript (node_modules/typescript) is project

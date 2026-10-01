@@ -96,7 +96,14 @@ function M.restore()
   local success = pcall(persistence.load)
   if reopen_explorer then
     vim.schedule(function()
+      local win = vim.api.nvim_get_current_win()
       Snacks.explorer()
+      -- Keep the cursor in the restored file, not the sidebar.
+      vim.schedule(function()
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_set_current_win(win)
+        end
+      end)
     end)
   end
   return success

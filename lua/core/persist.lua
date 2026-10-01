@@ -41,6 +41,19 @@ local function validate_write_path(filepath)
   end
 
   if vim.fn.isdirectory(parent) ~= 1 then
+    -- Check the nearest existing ancestor first: never create directories
+    -- outside Neovim's own data/state/cache dirs.
+    local ancestor = parent
+    while vim.fn.isdirectory(ancestor) ~= 1 do
+      local up = vim.fn.fnamemodify(ancestor, ":h")
+      if up == ancestor then
+        break
+      end
+      ancestor = up
+    end
+    if not is_within_allowed_roots(ancestor) then
+      return false, "Write path outside Neovim-controlled directories"
+    end
     vim.fn.mkdir(parent, "p", "0700")
   end
 

@@ -19,6 +19,11 @@ g.loaded_ruby_provider = 0
 g.loaded_node_provider = 0
 g.loaded_perl_provider = 0
 
+-- Built-in EditorConfig support (runtime/plugin/editorconfig.lua). It only
+-- sets a fixed, safe subset of buffer options (indent, eol, charset, trailing
+-- whitespace, max_line_length), so it is on unless the user opts out.
+g.editorconfig = require("core.settings").get "editorconfig"
+
 --------------------------------------
 -- Security
 --------------------------------------

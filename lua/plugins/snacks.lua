@@ -297,7 +297,6 @@ return {
       explorer = { enabled = true, replace_netrw = true, trash = true },
 
       -- KEEP DISABLED (using other plugins)
-      terminal = { enabled = false }, -- Keep toggleterm
       lazygit = { enabled = false }, -- Keep lazygit.nvim
       input = { enabled = true },
       statuscolumn = { enabled = false },

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.png" alt="nvim-config logo" width="360">
+</p>
+
 # nvim-config
 
 A fast, general-purpose Neovim distribution for Neovim 0.12. Languages come as

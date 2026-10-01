@@ -22,6 +22,7 @@ allow_defined_top = true
 -- Paths to check
 include_files = {
   "lua/**/*.lua",
+  "scripts/**/*.lua",
   ".stylua.toml",
 }
 

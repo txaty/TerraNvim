@@ -11,7 +11,9 @@ local lang = require "core.lang"
 local M = {}
 
 -- Keys that belong to the pack schema, not to vim.lsp.Config.
-local RESERVED = { mason = true, enabled = true, managed_by = true }
+local RESERVED = { mason = true, enabled = true, managed_by = true, trust = true }
+
+local trust_gated = {} ---@type table<string, true> servers that need a trusted project
 
 ---@type table<string, "enabled"|"pending"|"missing"|"managed"|"disabled">
 local status = {}
@@ -37,14 +39,38 @@ local function runnable(cfg, spec)
   return true
 end
 
+---Servers marked `trust = true` load project code (eslint, tailwindcss): only
+---give them a root, and so a client, in trusted projects (core.trust). The
+---project is checked before nvim-lspconfig's own root_dir runs, since root_dir
+---functions may execute project files too.
+---@param name string
+---@param base vim.lsp.Config lspconfig + pack config
+---@return fun(bufnr: integer, on_dir: fun(root?: string))
+local function trusted_root(name, base)
+  return function(bufnr, on_dir)
+    if not require("core.trust").allows(name, bufnr) then
+      return
+    end
+    if type(base.root_dir) == "function" then
+      return base.root_dir(bufnr, on_dir)
+    end
+    on_dir(vim.fs.root(bufnr, base.root_markers or { ".git" }))
+  end
+end
+
+---@param name string
 ---@param spec table
 ---@return table
-local function to_config(spec)
+local function to_config(name, spec)
   local cfg = {}
   for key, value in pairs(spec) do
     if not RESERVED[key] then
       cfg[key] = value
     end
+  end
+  if spec.trust then
+    trust_gated[name] = true
+    cfg.root_dir = trusted_root(name, vim.tbl_extend("force", vim.lsp.config[name] or {}, cfg))
   end
   return cfg
 end
@@ -87,7 +113,7 @@ function M.configure(list)
     if entry.spec.managed_by then
       status[name] = "managed"
     else
-      vim.lsp.config(name, to_config(entry.spec))
+      vim.lsp.config(name, to_config(name, entry.spec))
       if not auto_start then
         status[name] = "disabled"
       elseif enable(name, entry.spec) then
@@ -116,6 +142,7 @@ function M.setup()
   M.ready = true
   vim.schedule(function()
     M.configure()
+    M.configured = true
   end)
 end
 
@@ -142,6 +169,17 @@ function M.on_installed(pkg)
     end
   end
   pending[pkg] = nil
+end
+
+---After :TrustProject: re-run FileType matching for the trust-gated servers
+---so they attach to the now-trusted project's open buffers.
+function M.restart_trust_gated()
+  local names = vim.tbl_filter(function(name)
+    return status[name] == "enabled"
+  end, vim.tbl_keys(trust_gated))
+  if #names > 0 then
+    vim.lsp.enable(names)
+  end
 end
 
 ---Server name -> status, for :checkhealth core.lang and the language panel.

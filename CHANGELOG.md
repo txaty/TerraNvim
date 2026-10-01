@@ -26,6 +26,11 @@ redirects the old URL). Language support is data-driven, defaults are
   See docs/languages.md.
 - Missing Mason tools and treesitter parsers of enabled packs install on
   first use (`install.auto`); servers attach when their install finishes.
+- **Project trust** (`:TrustProject`, `<leader>Lt`, Neovim's trust database):
+  until a project is trusted, servers and tools come only from Mason/PATH,
+  never its `node_modules/.bin`, and tools whose config is code (luacheck,
+  prettier, eslint, tailwindcss, markdownlint-cli2, solhint, workspace
+  TypeScript) don't run.
 - `lua/core/settings.lua` with an optional, gitignored `lua/user/` layer
   (`settings.lua`, `plugins/`, `langs/`).
 - Runtime toggles: `<leader>uf` / `<leader>uF` format on save (global /

@@ -42,6 +42,17 @@ function M.check()
     end
   end
   health.info("Automatic installs: " .. (require("core.settings").get "install.auto" and "on" or "off"))
+  local trust = require "core.trust"
+  local root = trust.project_root(0)
+  if trust.is_trusted(root) then
+    health.info(("Project %s is trusted: tools that run project code are allowed"):format(root))
+  else
+    health.info(
+      ("Project %s is not trusted: tools that run project code are skipped "):format(root)
+        .. "(eslint, tailwindcss, prettier, luacheck, markdownlint-cli2, solhint, workspace TypeScript); "
+        .. ":TrustProject allows them"
+    )
+  end
 
   for _, name in ipairs(lang.enabled()) do
     local pack = lang.get(name)

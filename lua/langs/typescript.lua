@@ -36,7 +36,9 @@ return {
           complete_function_calls = true,
           vtsls = {
             enableMoveToFileCodeAction = true,
-            autoUseWorkspaceTsdk = true,
+            -- The workspace TypeScript (node_modules/typescript) is project
+            -- code; before_init turns this on in trusted projects only.
+            autoUseWorkspaceTsdk = false,
             experimental = { completion = { enableServerSideFuzzyMatch = true } },
           },
           typescript = {
@@ -46,15 +48,50 @@ return {
           },
           javascript = { inlayHints = inlay_hints },
         },
+        before_init = function(_, config)
+          if config.root_dir and require("core.trust").is_trusted(config.root_dir) then
+            config.settings.vtsls.autoUseWorkspaceTsdk = true
+          end
+        end,
       },
-      tsc = { mason = "tsc", enabled = o.server == "tsc" },
-      -- Both only attach inside projects that configure them (eslint config /
-      -- biome.json), so they are safe to keep on.
-      eslint = { mason = "eslint-lsp", settings = { workingDirectories = { mode = "auto" } } },
-      biome = { mason = "biome" },
+      tsc = {
+        mason = "tsc",
+        enabled = o.server == "tsc",
+        -- nvim-lspconfig's tsc probes <root>/node_modules/.bin/tsc --version
+        -- while resolving the root, i.e. runs a project binary: use Mason's
+        -- tsc and plain root markers instead.
+        cmd = { "tsc", "--lsp", "--stdio" },
+        root_dir = function(bufnr, on_dir)
+          if vim.fs.root(bufnr, { "deno.json", "deno.jsonc", "deno.lock" }) then
+            return -- Deno project
+          end
+          local markers = { "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb", "bun.lock" }
+          on_dir(vim.fs.root(bufnr, { markers, { ".git" } }) or vim.fn.getcwd())
+        end,
+      },
+      -- eslint runs the project's eslint and its JS config: trusted projects
+      -- only. Both attach only where the project configures them.
+      eslint = {
+        mason = "eslint-lsp",
+        cmd = { "vscode-eslint-language-server", "--stdio" },
+        trust = true,
+        settings = { workingDirectories = { mode = "auto" } },
+      },
+      biome = { mason = "biome", cmd = { "biome", "lsp-proxy" } },
     }
   end,
   tools = { "prettierd", "js-debug-adapter" },
+  formatters = function()
+    -- prettier loads JS configs/plugins from the project: trusted projects only
+    -- (elsewhere vtsls formats). Biome's config is data, but conform would run
+    -- the project's node_modules biome: only when trusted.
+    local trust = require "core.trust"
+    return {
+      prettier = { command = trust.node_bin "prettier", condition = trust.formatter_condition "prettier" },
+      prettierd = { condition = trust.formatter_condition "prettier" },
+      ["biome-check"] = { command = trust.node_bin "biome" },
+    }
+  end,
   formatters_by_ft = function(o)
     local function pick(buf)
       if o.formatter == "biome" or (o.formatter == "auto" and vim.fs.root(buf, { "biome.json", "biome.jsonc" })) then

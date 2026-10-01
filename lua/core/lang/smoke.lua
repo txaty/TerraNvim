@@ -95,6 +95,10 @@ return function(T)
     end
   end
   require("lazy").load { plugins = { "nvim-lspconfig", "conform.nvim", "nvim-lint" } }
+  -- core.lang.lsp configures servers one tick after nvim-lspconfig loads.
+  vim.wait(2000, function()
+    return require("core.lang.lsp").configured == true
+  end, 10)
 
   -- LSP: every server of an enabled pack is configured; disabled packs' are not enabled.
   local lsp_status = require("core.lang.lsp").status()
@@ -114,6 +118,17 @@ return function(T)
     end
   end
   check("enabled packs' servers have a config", #unconfigured == 0, table.concat(unconfigured, ", "))
+
+  -- Mason-backed servers must not resolve their binary from the project
+  -- (nvim-lspconfig's function cmds prefer <root>/node_modules/.bin).
+  local function_cmds = {}
+  for server, entry in pairs(lang.collect.servers()) do
+    local cfg = vim.lsp.config[server]
+    if type(entry.spec.mason) == "string" and not entry.spec.managed_by and cfg and type(cfg.cmd) ~= "table" then
+      function_cmds[#function_cmds + 1] = server
+    end
+  end
+  check("Mason servers use a pinned cmd (no project binaries)", #function_cmds == 0, table.concat(function_cmds, ", "))
   check("disabled packs' servers are not enabled", #wrongly_enabled == 0, table.concat(wrongly_enabled, ", "))
   if #not_running > 0 then
     table.sort(not_running)

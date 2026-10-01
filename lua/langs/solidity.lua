@@ -1,11 +1,5 @@
 -- Solidity: Nomic Foundation's language server (Hardhat & Foundry projects),
 -- forge fmt in Foundry projects, solhint when the project configures it.
-local function has(names)
-  return function(ctx)
-    return vim.fs.root(ctx.dirname or ctx, names) ~= nil
-  end
-end
-
 return {
   title = "Solidity",
   description = "nomicfoundation solidity-language-server, forge fmt, solhint",
@@ -25,6 +19,13 @@ return {
   },
   linters_by_ft = { solidity = { "solhint" } },
   linters = {
-    solhint = { condition = has { ".solhint.json", ".solhintrc", ".solhintrc.json" } },
+    -- Only where configured, and only in trusted projects: solhint loads
+    -- plugins named in its config.
+    solhint = {
+      condition = function(ctx)
+        return vim.fs.root(ctx.dirname, { ".solhint.json", ".solhintrc", ".solhintrc.json" }) ~= nil
+          and require("core.trust").allows("solhint", ctx.buf)
+      end,
+    },
   },
 }

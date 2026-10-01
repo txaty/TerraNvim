@@ -9,9 +9,10 @@ record, use `git log`.
 
 ## [Unreleased]
 
-The config becomes a general-purpose distribution: language support is
-data-driven, defaults are "batteries on", and stale plugins are replaced.
-Requires **Neovim 0.12**.
+The config becomes a general-purpose distribution, **TerraNvim** (the
+repository moved from `txaty/nvim-config` to `txaty/TerraNvim`; GitHub
+redirects the old URL). Language support is data-driven, defaults are
+"batteries on", and stale plugins are replaced. Requires **Neovim 0.12**.
 
 ### Added
 

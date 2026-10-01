@@ -1,13 +1,24 @@
 <p align="center">
-  <img src="docs/assets/logo.png" alt="nvim-config logo" width="360">
+  <img src="docs/assets/logo.png" alt="TerraNvim logo" width="320">
 </p>
 
-# nvim-config
+<h1 align="center">TerraNvim</h1>
 
-A fast, general-purpose Neovim distribution for Neovim 0.12. Languages come as
-**language packs**: one data file per language that you switch on with
-`:LangEnable`. Nothing language-specific is hard-wired, and startup stays
-around 25 ms.
+<p align="center">
+  A down-to-earth Neovim distribution: fast, modular, and ready for everyday work.
+</p>
+
+<p align="center">
+  <a href="https://neovim.io"><img src="https://img.shields.io/badge/Neovim-0.12%2B-57A143?logo=neovim&logoColor=white" alt="Neovim 0.12+"></a>
+  <img src="https://img.shields.io/badge/Made%20with-Lua-2C2D72?logo=lua&logoColor=white" alt="Made with Lua">
+  <img src="https://img.shields.io/badge/startup-~25%20ms-3ddc97" alt="Startup about 25 ms">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/txaty/TerraNvim" alt="MIT license"></a>
+</p>
+
+TerraNvim is a Neovim configuration you can use as a complete IDE-like setup
+or as a base for your own. Languages come as **language packs**: one data file
+per language that you switch on with `:LangEnable`. Nothing language-specific
+is hard-wired, and startup stays around 25 ms.
 
 - **Language packs** for Lua, Bash, JSON, YAML, TOML, Markdown, Docker,
   C/C++ (embedded-ready), Go, Python, Rust, TypeScript/JavaScript, HTML/CSS,
@@ -40,8 +51,16 @@ around 25 ms.
 
 ```sh
 mv ~/.config/nvim ~/.config/nvim.bak 2>/dev/null   # keep an existing config
-git clone https://github.com/txaty/nvim-config ~/.config/nvim
+git clone https://github.com/txaty/TerraNvim ~/.config/nvim
 nvim    # lazy.nvim bootstraps itself and installs the pinned plugins
+```
+
+To try it next to your current config, use a separate app name (it keeps its
+own config, plugins and state):
+
+```sh
+git clone https://github.com/txaty/TerraNvim ~/.config/terranvim
+NVIM_APPNAME=terranvim nvim
 ```
 
 Then in Neovim:

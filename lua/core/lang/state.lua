@@ -40,8 +40,14 @@ local function load()
   return data
 end
 
+---@param t table
+local function object(t)
+  -- vim.json.encode writes an empty table as `[]`; keep maps as `{}`.
+  return next(t) and t or vim.empty_dict()
+end
+
 local function save()
-  persist.save_json(path, { version = 2, languages = data.languages, options = data.options })
+  persist.save_json(path, { version = 2, languages = object(data.languages), options = object(data.options) })
 end
 
 local env ---@type false|"all"|"none"|"default"|table<string, true>|nil

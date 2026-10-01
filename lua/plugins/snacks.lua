@@ -182,26 +182,6 @@ return {
             },
           },
         },
-        -- File ignore patterns (consistent with former Telescope config)
-        matcher = {
-          file_ignore_patterns = {
-            "node_modules/",
-            ".git/",
-            "%.lock",
-            "__pycache__/",
-            "%.pyc",
-            ".venv/",
-            "venv/",
-            "dist/",
-            "build/",
-            "target/",
-            "%.min%.js",
-            "%.min%.css",
-            "%.o",
-            "%.a",
-            "%.so",
-          },
-        },
       },
       scroll = {
         enabled = true,
@@ -457,7 +437,6 @@ return {
           Snacks.words.jump(vim.v.count1)
         end,
         desc = "Next reference",
-        mode = { "n", "t" },
       },
       {
         "[[",
@@ -465,7 +444,6 @@ return {
           Snacks.words.jump(-vim.v.count1)
         end,
         desc = "Prev reference",
-        mode = { "n", "t" },
       },
       -- Notifications handled by noice.nvim (<leader>nh, <leader>nd)
 
@@ -526,15 +504,15 @@ return {
             )
           end
 
-          -- Debug helpers. Note this does NOT touch vim.notify: `notifier` is
-          -- disabled above because noice.nvim owns messages.
+          -- Debug helpers (dd(...) inspects, bt() prints a backtrace). vim.print is
+          -- left alone: overriding it rerouted `:=`/`:lua =` and plugin output
+          -- into notifications and changed its return value.
           _G.dd = function(...)
             Snacks.debug.inspect(...)
           end
           _G.bt = function()
             Snacks.debug.backtrace()
           end
-          vim.print = _G.dd
 
           -- Runtime toggles for core.settings switches. Session-scoped on
           -- purpose: the persistent default lives in lua/user/settings.lua.

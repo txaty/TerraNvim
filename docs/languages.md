@@ -56,7 +56,7 @@ about individual languages.
 | `swift` | sourcekit-lsp (Xcode, not Mason) | swiftformat with `.swiftformat`, else `swift format` · swiftlint | lldb-dap · xcodebuild.nvim (macOS) |
 | `kotlin` | kotlin-lsp (JetBrains) | ktlint (option: ktfmt) | |
 | `solidity` | Nomic Foundation solidity LS (trusted projects) | `forge fmt` in Foundry projects · solhint (with config) | |
-| `latex` | texlab | tex-fmt (option: latexindent) | vimtex (Skim / zathura / Sumatra) |
+| `latex` | texlab | tex-fmt (option: latexindent) | vimtex (latexmk, or tectonic without TeX Live; Skim / zathura / Sumatra) |
 | `typst` | tinymist | typstyle (via tinymist) | typst-preview |
 
 ## Pack schema

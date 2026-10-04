@@ -46,6 +46,10 @@ redirects the old URL). Language support is data-driven, defaults are
 
 ### Changed
 
+- **LaTeX compiles without TeX Live.** The `latex` pack uses latexmk when it is
+  installed and falls back to tectonic otherwise. latexmk writes to `build/`
+  and keeps continuous mode; tectonic builds are one-shot (`<leader>ml` per
+  build) and write beside the source.
 - LSP servers now start automatically, and format-on-save and linting are on
   (all switchable). The old `vim.g.enable_*` flags were never set, so all of
   this was silently off.

@@ -3,7 +3,7 @@
 -- compile, <leader>mv view, <leader>me errors, <leader>mt TOC, ...
 return {
   title = "LaTeX",
-  description = "vimtex (latexmk, Skim/zathura/Sumatra), texlab, tex-fmt|latexindent",
+  description = "vimtex (latexmk or tectonic, Skim/zathura/Sumatra), texlab, tex-fmt|latexindent",
   filetypes = { "tex", "plaintex", "bib" },
   grep_type = "tex",
   options = {
@@ -13,14 +13,17 @@ return {
   -- text objects); treesitter highlighting would replace it.
   ts_highlight = { tex = false, plaintex = false },
   parsers = { "bibtex" },
-  servers = {
-    -- Same build directory as vimtex's latexmk (aux_dir/out_dir below), so
-    -- texlab finds the log for its build diagnostics.
-    texlab = {
-      mason = "texlab",
-      settings = { texlab = { build = { auxDirectory = "build", logDirectory = "build", pdfDirectory = "build" } } },
-    },
-  },
+  servers = function()
+    -- Point texlab at the directory vimtex's compiler writes to (see init below),
+    -- so it finds the log for its build diagnostics: build/ under latexmk, the
+    -- source directory (texlab's default) under tectonic.
+    local texlab = { mason = "texlab" }
+    if vim.fn.executable "latexmk" == 1 then
+      texlab.settings =
+        { texlab = { build = { auxDirectory = "build", logDirectory = "build", pdfDirectory = "build" } } }
+    end
+    return { texlab = texlab }
+  end,
   tools = function(o)
     return { o.formatter }
   end,
@@ -48,15 +51,27 @@ return {
         vim.g.vimtex_mappings_prefix = "<leader>m"
         vim.g.vimtex_syntax_conceal_disable = 1
         vim.g.vimtex_quickfix_open_on_warning = 1
-        vim.g.vimtex_compiler_method = "latexmk"
-        vim.g.vimtex_compiler_latexmk = {
-          aux_dir = "build",
-          out_dir = "build",
-          callback = 1,
-          continuous = 1,
-          executable = "latexmk",
-          options = { "-pdf", "-synctex=1", "-interaction=nonstopmode", "-file-line-error" },
-        }
+        -- latexmk ships with TeX Live; a machine with only tectonic (no TeX Live
+        -- install) compiles with tectonic instead. vimtex's tectonic backend is
+        -- single-shot (no continuous mode), so <leader>ml builds once per press.
+        -- latexmk writes to build/. tectonic writes beside the source: it refuses a
+        -- missing --outdir, and vimtex (3abfa1f) only creates out_dir subdirectories
+        -- for sources in subdirectories, never out_dir itself for a top-level main file.
+        if vim.fn.executable "latexmk" == 1 then
+          vim.g.vimtex_compiler_method = "latexmk"
+          vim.g.vimtex_compiler_latexmk = {
+            aux_dir = "build",
+            out_dir = "build",
+            callback = 1,
+            continuous = 1,
+            executable = "latexmk",
+            options = { "-pdf", "-synctex=1", "-interaction=nonstopmode", "-file-line-error" },
+          }
+        else
+          vim.g.vimtex_compiler_method = "tectonic"
+          -- --keep-logs feeds the quickfix list; --synctex keeps Skim forward/inverse search.
+          vim.g.vimtex_compiler_tectonic = { out_dir = "", options = { "--keep-logs", "--synctex" } }
+        end
       end,
     },
   },
